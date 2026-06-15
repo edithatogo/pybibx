@@ -2,6 +2,7 @@
 
 ## Must
 
+- Define a track orchestration policy that assigns Codex `gpt-5.5` as orchestrator/reviewer, Cline `deepseek-v4-flash` as an external worker lane when locally configured, and the available multi-agent tool as the fallback swarm mechanism.
 - Define Pydantic v2 schema contracts for provider payloads, normalized works, authors, institutions, citations, ontology facets, evidence sets, reports, and exports.
 - Version all inputs, outputs, schema profiles, ontology profiles, provider adapters, and library compatibility metadata.
 - Add typed configuration with `pydantic-settings` for provider credentials, API rate limits, local model endpoints, storage paths, observability, and feature gates.
@@ -15,6 +16,7 @@
 
 ## Should
 
+- Run parallel track work only with explicit file ownership, isolated worktrees or disjoint write scopes, and orchestrator-owned integration.
 - Use RustWorkX as the main graph computation backend, with NetworkX compatibility/export.
 - Evaluate Jiter for fast iterable/partial JSON parsing where it improves provider or streaming-agent performance.
 - Use PydanticAI as the primary typed-agent framework and Instructor as the simple LLM-to-Pydantic extraction adapter.
@@ -42,4 +44,3 @@
 - Won't remove legacy compatibility before public adapters, migration notes, and tests exist.
 - Won't let AI systems invent sources, citations, methods, or unsupported claims.
 - Won't pin ambiguous dependencies such as Una or Mantra until exact packages and project fit are verified.
-

@@ -7,6 +7,17 @@
 - Commit after each completed task or checkpoint when implementation work begins.
 - Record concise task summaries with Git notes or equivalent Conductor evidence.
 
+## Agent Swarm Orchestration
+
+- Codex with `gpt-5.5` is the primary orchestrator, integrator, and reviewer for Conductor track work.
+- Cline with `deepseek-v4-flash` is an external worker lane when the local Cline provider is configured and available.
+- The in-session multi-agent tool is the fallback swarm lane for Codex sub-agents when a local Cline/DeepSeek run is unavailable or should not touch the worktree.
+- Every worker must receive a bounded track phase, explicit file ownership, and a no-revert instruction.
+- Parallel workers must use disjoint write scopes or isolated worktrees.
+- External/manual worker output must be copied or summarized into Conductor evidence and reviewed by the Codex orchestrator before any task is marked complete.
+- The orchestrator owns final integration, conflict resolution, verification, and commits.
+- If a requested model/backend is unavailable, document the blocker and run the task with the next available lane only after preserving the intended assignment.
+
 ## Quality Gates
 
 - Target 90% test coverage for new 6.0 code, with ratcheted baselines for legacy code.
@@ -22,4 +33,3 @@ Each phase plan must end with a manual verification checkpoint:
 - Confirm no unrelated files were modified.
 - Confirm the phase acceptance criteria are met.
 - Record blockers separately from completed local work.
-

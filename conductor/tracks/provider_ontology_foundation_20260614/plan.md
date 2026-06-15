@@ -2,6 +2,11 @@
 
 ## Phase 1: Repository And Tooling Foundation
 
+- [ ] Task: Configure agent orchestration policy.
+    - [ ] Document Codex `gpt-5.5` as orchestrator, reviewer, verifier, and committer.
+    - [ ] Document Cline `deepseek-v4-flash` as an external worker lane gated by local provider configuration.
+    - [ ] Document the available multi-agent tool as the Codex swarm fallback.
+    - [ ] Define file ownership, isolated worktree, no-revert, and integration rules for delegated work.
 - [ ] Task: Add modern packaging and environment plan.
     - [ ] Document Pixi environment expectations.
     - [ ] Document uv workspace/package layout.
@@ -71,6 +76,11 @@
     - [ ] Support mistral.rs endpoints for OpenAI/Anthropic-compatible local serving, embeddings, multimodal paths, and metrics.
     - [ ] Evaluate optional Rig bridge for Rust agent orchestration.
     - [ ] Evaluate optional Monty code-mode sandbox with strict denial tests.
+- [ ] Task: Define agent execution lanes for implementation.
+    - [ ] Use Codex `gpt-5.5` as orchestrator for schema, provenance, integration, and final verification.
+    - [ ] Use Cline `deepseek-v4-flash` only as a provider-verified external worker lane with isolated worktrees or disjoint file ownership.
+    - [ ] Require Conductor-reviewed evidence before marking any external/manual lane task complete.
+    - [ ] Use Codex swarm sub-agents for independent review or verification when Cline/DeepSeek is unavailable.
 - [ ] Task: Define full-text RAG.
     - [ ] Route legal PDFs through Unpaywall and open preprint sources.
     - [ ] Evaluate Docling and PDFMux for structured PDF extraction.
@@ -104,4 +114,3 @@
     - [ ] Pass 2: check current-state versus target-state separation.
     - [ ] Pass 3: check implementation readiness, testability, and external-gate boundaries.
 - [ ] Task: Conductor - User Manual Verification 'Verification And Iteration' (Protocol in workflow.md)
-

@@ -7,6 +7,7 @@
 - [Tech Stack](./tech-stack.md)
 - [Requirements](./requirements.md)
 - [Design](./design.md)
+- [Agent Orchestration](./agent-orchestration.md)
 
 ## Workflow
 
@@ -17,4 +18,3 @@
 
 - [Tracks Registry](./tracks.md)
 - [Tracks Directory](./tracks/)
-

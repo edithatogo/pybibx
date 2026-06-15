@@ -26,10 +26,10 @@
 - Observability: Loguru, Pydantic Logfire, OpenTelemetry, optional Prometheus metrics from local runtimes.
 - Pipelines and data quality: Kedro, Great Expectations, Deepchecks.
 - UI/API: FastAPI, Reflex evaluation, Cosmograph evaluation, legacy Flask compatibility boundary.
+- Agent orchestration: Codex CLI with `gpt-5.5` for orchestration/review, Cline CLI with `deepseek-v4-flash` for external worker lanes when configured, and in-session multi-agent tools for Codex swarm fallback.
 
 ## Verify Before Pinning
 
 - Una: exact package/source not yet confirmed.
 - Mantra: exact package/source not yet confirmed; Logfire is the planned Pydantic-native observability layer.
 - PDFMux and commercial/licensed services: evaluate availability, terms, and local/offline alternatives before depending on them.
-

@@ -133,3 +133,21 @@ flowchart LR
     Renovate[Renovate] --> Commit
 ```
 
+## Agent Swarm Orchestration
+
+```mermaid
+flowchart TD
+    User[User request or track queue] --> Orchestrator[Codex gpt-5.5 orchestrator]
+    Orchestrator --> Plan[Conductor track phase plan]
+    Plan --> CodexSwarm[Codex sub-agents via multi-agent tool]
+    Plan --> Cline[Cline deepseek-v4-flash external lane]
+    Cline --> ClineGate{Provider configured?}
+    ClineGate -->|yes| ClineWorktree[Isolated Cline worktree]
+    ClineGate -->|no| Blocker[Record external backend blocker]
+    CodexSwarm --> Drafts[Bounded phase outputs]
+    ClineWorktree --> Drafts
+    Drafts --> Review[Codex gpt-5.5 integration review]
+    Review --> Verify[Conductor verification gates]
+    Verify --> Commit[Orchestrator-owned commit]
+```
+
