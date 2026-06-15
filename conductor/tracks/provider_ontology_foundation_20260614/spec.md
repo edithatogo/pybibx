@@ -31,5 +31,6 @@ Define the first PyBibX 6.0 foundation track: a strict, versioned, provider-awar
 
 - The Conductor requirements and design files cover all requested libraries, providers, ontologies, RAG/local execution components, and quality gates.
 - The Conductor workflow documents how Codex `gpt-5.5`, Cline `deepseek-v4-flash`, and available swarm-style sub-agents are assigned to track phases.
+- A repo-local swarm launcher runs blocker-first checks, emits lane prompts, and refuses Cline execution until `deepseek-v4-flash` is locally verified.
 - Track tasks are complete enough for a future `/conductor:implement` pass to start without re-planning the foundation.
 - The plan separates current state from target state and local implementation from external/manual gates.

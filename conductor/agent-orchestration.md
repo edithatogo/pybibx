@@ -88,3 +88,20 @@ If the `deepseek-v4-flash` provider/model is not configured, record the blocker 
 - Verify all worker outputs with the active track's quality gates.
 - Run `git diff --check` before committing.
 - Commit only from the orchestrator lane.
+
+## Repo-Local Launcher
+
+Use `scripts/conductor_swarm.py` as the blocker-first control surface for this repo.
+
+```bash
+python scripts/conductor_swarm.py doctor
+python scripts/conductor_swarm.py plan --json
+python scripts/conductor_swarm.py validate-config --json
+python scripts/conductor_swarm.py prompt --lane codex --phase "Phase 1: Repository And Tooling Foundation"
+python scripts/conductor_swarm.py run-codex --phase "Phase 1: Repository And Tooling Foundation"
+python scripts/conductor_swarm.py run-cline --phase "Phase 1: Repository And Tooling Foundation"
+```
+
+`run-codex` and `run-cline` are dry-run commands unless `--execute` is supplied. `run-cline` also refuses to launch unless the local Cline configuration verifies the `deepseek-v4-flash` provider/model for this checkout.
+
+Assignment config lives in `conductor/swarm_assignments.json`. Each assignment must declare the lane, track phase, file ownership paths, acceptance criteria, and a no-revert instruction. The launcher rejects overlapping file ownership before any worker launch.

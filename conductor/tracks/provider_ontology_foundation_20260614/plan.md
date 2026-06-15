@@ -2,11 +2,12 @@
 
 ## Phase 1: Repository And Tooling Foundation
 
-- [ ] Task: Configure agent orchestration policy.
-    - [ ] Document Codex `gpt-5.5` as orchestrator, reviewer, verifier, and committer.
-    - [ ] Document Cline `deepseek-v4-flash` as an external worker lane gated by local provider configuration.
-    - [ ] Document the available multi-agent tool as the Codex swarm fallback.
-    - [ ] Define file ownership, isolated worktree, no-revert, and integration rules for delegated work.
+- [x] Task: Configure agent orchestration policy.
+    - [x] Document Codex `gpt-5.5` as orchestrator, reviewer, verifier, and committer.
+    - [x] Document Cline `deepseek-v4-flash` as an external worker lane gated by local provider configuration.
+    - [x] Document the available multi-agent tool as the Codex swarm fallback.
+    - [x] Define file ownership, isolated worktree, no-revert, and integration rules for delegated work.
+    - [x] Add a blocker-first repo-local swarm launcher with dry-run defaults and fail-closed Cline gating.
 - [ ] Task: Add modern packaging and environment plan.
     - [ ] Document Pixi environment expectations.
     - [ ] Document uv workspace/package layout.
