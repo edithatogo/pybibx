@@ -16,7 +16,8 @@ pytest-cov = "*"
 vale = "*"
 
 [feature.dev.tasks]
-sync = "uv sync --all-extras --group dev"
+sync = "uv sync --group dev"
+sync-all-extras = "uv sync --all-extras --group dev"
 lint = "ruff check pybibx setup.py tests"
 format-check = "ruff format --check pybibx setup.py tests"
 typecheck = "pyright"

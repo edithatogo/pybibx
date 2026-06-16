@@ -15,6 +15,7 @@ Verified at `2026-06-16T14:44:20Z`.
 - `python scripts/check_conductor_swarm.py`: passed.
 - `git diff --check`: passed.
 - `vale conductor README.md`: passed with 0 errors and 0 warnings; existing docs produce spelling suggestions only.
+- GitHub Actions run `27626085039`: failed during `uv sync --all-extras --group dev` because legacy extra `gensim==4.4.0` does not build against CPython 3.14. The baseline workflow now uses `uv sync --group dev`; all-extras remains an explicit non-baseline Pixi task.
 
 ## Known Boundaries
 

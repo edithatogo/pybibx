@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install package and dev tools
-        run: uv sync --all-extras --group dev
+        run: uv sync --group dev
       - name: Ruff check
         uses: astral-sh/ruff-action@v3
         with:
