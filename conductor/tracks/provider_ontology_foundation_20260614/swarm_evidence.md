@@ -37,3 +37,12 @@ External Cline output must be copied or summarized into this track as reviewed e
 - The same doctor output reported `ahead 2, behind 0`; branch ahead state is allowed and reported.
 - The same doctor output verified Codex CLI and Cline CLI availability.
 - The same doctor output blocked the Cline provider lane because `cline config --json` requires a TTY in this session.
+
+## 2026-06-16 Max-Fan-Out Swarm Run
+
+- Ran six parallel Codex `gpt-5.5` phase workers, which was the practical concurrency limit reached in this session.
+- A seventh verification worker could not be spawned at first because the agent thread limit was reached.
+- Phase 1, Phase 2, Phase 3, Phase 5, and Phase 6 workers completed and produced evidence briefs.
+- Phase 4 worker timed out twice; local fallback evidence was produced by the orchestrator.
+- Cline `deepseek-v4-flash` remained blocked because provider/model verification requires an interactive TTY.
+- See `swarm_run_20260616.md` and `swarm_phase_*.md` files for integrated evidence.
