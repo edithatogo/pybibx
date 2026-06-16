@@ -1,0 +1,33 @@
+name: quality
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Install package and dev tools
+        run: uv sync --all-extras --group dev
+      - name: Ruff check
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: check pybibx setup.py tests
+      - name: Ruff format check
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: format --check pybibx setup.py tests
+      - name: Pyright
+        run: uv run pyright
+      - name: ty
+        run: uv run ty check pybibx/__init__.py
+      - name: Tests
+        run: uv run pytest

@@ -1,0 +1,28 @@
+[project]
+name = "pybibx"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64"]
+
+[dependencies]
+python = "3.14.*"
+pip = "*"
+uv = "*"
+
+[feature.dev.dependencies]
+ruff = "*"
+pyright = "*"
+pytest = "*"
+pytest-cov = "*"
+vale = "*"
+
+[feature.dev.tasks]
+sync = "uv sync --all-extras --group dev"
+lint = "ruff check pybibx setup.py tests"
+format-check = "ruff format --check pybibx setup.py tests"
+typecheck = "pyright"
+test = "pytest"
+prose = "vale conductor README.md"
+swarm-doctor = "python scripts/conductor_swarm.py doctor"
+
+[environments]
+default = ["dev"]

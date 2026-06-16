@@ -1,0 +1,202 @@
+[build-system]
+requires = ["setuptools>=80", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pybibx"
+version = "5.9.2"
+description = "A Bibliometric and Scientometric Library Powered with Artificial Intelligence Tools"
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+license = { text = "GNU" }
+authors = [
+  { name = "Valdecy Pereira", email = "valdecy.pereira@gmail.com" },
+]
+keywords = ["bibliometrics", "scientometrics", "citation-analysis", "research"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+  "chardet",
+  "networkx",
+  "numba",
+  "numpy",
+  "pandas",
+  "Pillow",
+  "scikit-learn",
+  "scipy",
+]
+
+[project.urls]
+Homepage = "https://github.com/Valdecy/pybibx"
+Repository = "https://github.com/Valdecy/pybibx"
+
+[project.scripts]
+pybibx-webapp = "pybibx.base.app:web_app"
+
+[project.optional-dependencies]
+web = ["flask"]
+viz = ["matplotlib", "plotly", "wordcloud"]
+nlp = [
+  "bert-extractive-summarizer",
+  "bertopic",
+  "gensim",
+  "keybert",
+  "sentence-transformers",
+  "sentencepiece",
+  "transformers",
+  "umap-learn",
+]
+ai = ["google-generativeai", "llmx", "openai"]
+torch = ["torch", "torchaudio", "torchvision"]
+schema = ["jiter", "pydantic>=2", "pydantic-settings"]
+data = ["polars"]
+graph = ["rustworkx"]
+rag = ["docling", "dspy", "fastembed", "instructor", "lancedb", "llama-index", "pydantic-ai"]
+observability = [
+  "logfire",
+  "loguru",
+  "opentelemetry-instrumentation-fastapi",
+  "opentelemetry-sdk",
+  "prometheus-client",
+]
+legacy = [
+  "bert-extractive-summarizer",
+  "bertopic",
+  "flask",
+  "gensim",
+  "google-generativeai",
+  "keybert",
+  "llmx",
+  "matplotlib",
+  "openai",
+  "plotly",
+  "sentence-transformers",
+  "sentencepiece",
+  "torch",
+  "torchaudio",
+  "torchvision",
+  "transformers",
+  "umap-learn",
+  "wordcloud",
+]
+modern = [
+  "docling",
+  "dspy",
+  "fastembed",
+  "instructor",
+  "jiter",
+  "lancedb",
+  "llama-index",
+  "logfire",
+  "loguru",
+  "opentelemetry-instrumentation-fastapi",
+  "opentelemetry-sdk",
+  "pydantic-ai",
+  "pydantic-settings",
+  "pydantic>=2",
+  "polars",
+  "prometheus-client",
+  "rustworkx",
+]
+all = [
+  "bert-extractive-summarizer",
+  "bertopic",
+  "docling",
+  "dspy",
+  "fastembed",
+  "flask",
+  "gensim",
+  "google-generativeai",
+  "instructor",
+  "jiter",
+  "keybert",
+  "lancedb",
+  "llama-index",
+  "llmx",
+  "logfire",
+  "loguru",
+  "matplotlib",
+  "openai",
+  "opentelemetry-instrumentation-fastapi",
+  "opentelemetry-sdk",
+  "plotly",
+  "polars",
+  "prometheus-client",
+  "pydantic-ai",
+  "pydantic-settings",
+  "pydantic>=2",
+  "rustworkx",
+  "sentence-transformers",
+  "sentencepiece",
+  "torch",
+  "torchaudio",
+  "torchvision",
+  "transformers",
+  "umap-learn",
+  "wordcloud",
+]
+
+[dependency-groups]
+dev = [
+  "build",
+  "pytest",
+  "pytest-cov",
+  "pytest-gremlins",
+  "pyright",
+  "ruff",
+  "scalene",
+  "ty",
+]
+
+[tool.setuptools.packages.find]
+include = ["pybibx*"]
+
+[tool.setuptools.package-data]
+"pybibx.base.stws" = ["*.txt"]
+
+[tool.uv.workspace]
+members = ["."]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 120
+extend-exclude = [
+  "pybibx/base",
+  "scripts",
+]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  "COM812",
+  "D",
+  "ISC001",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra --strict-config --strict-markers"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["pybibx", "scripts"]
+omit = ["pybibx/base/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 0

@@ -1,0 +1,11 @@
+extends: existence
+message: "Prefer project spelling '%s'."
+level: suggestion
+ignorecase: false
+tokens:
+  - PyBibX
+  - OpenAlex
+  - RustWorkX
+  - PydanticAI
+  - Logfire
+
