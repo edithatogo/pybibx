@@ -8,4 +8,4 @@
 - [x] Add LlamaIndex RAG orchestration specs.
 - [x] Move modern AI libraries into the optional AI extra.
 - [x] Run repository verification gates.
-- [ ] Commit, push, and check remote CI.
+- [x] Commit, push, and check remote CI.
