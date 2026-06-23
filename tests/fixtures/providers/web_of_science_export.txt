@@ -1,0 +1,2 @@
+AU	TI	PY	DI
+Researcher, Example	Web of Science Export Fixture	2026	10.1234/wos.fixture

@@ -16,3 +16,8 @@ This file tracks major tracks for the project. Each track has its own detailed p
 
 - [x] **Track: Schema Settings Versioning**
   *Link: [./tracks/schema_settings_versioning_20260624/](./tracks/schema_settings_versioning_20260624/)*
+
+---
+
+- [x] **Track: Provider Registry Fixtures**
+  *Link: [./tracks/provider_registry_fixtures_20260624/](./tracks/provider_registry_fixtures_20260624/)*

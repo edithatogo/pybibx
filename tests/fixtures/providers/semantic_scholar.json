@@ -1,0 +1,8 @@
+{
+  "paperId": "abcdef123456",
+  "title": "Semantic Scholar fixture paper",
+  "externalIds": {
+    "DOI": "10.1234/semantic.fixture"
+  },
+  "citationCount": 3
+}

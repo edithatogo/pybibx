@@ -1,0 +1,9 @@
+{
+  "status": "ok",
+  "message-type": "work",
+  "message": {
+    "DOI": "10.1234/crossref.fixture",
+    "title": ["Crossref fixture work"],
+    "type": "journal-article"
+  }
+}

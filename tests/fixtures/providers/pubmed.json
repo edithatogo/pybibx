@@ -1,0 +1,10 @@
+{
+  "result": {
+    "uids": ["12345678"],
+    "12345678": {
+      "uid": "12345678",
+      "title": "PubMed fixture record",
+      "pubdate": "2026"
+    }
+  }
+}
