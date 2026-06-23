@@ -3702,11 +3702,13 @@ version = "5.9.2"
 source = { editable = "." }
 dependencies = [
     { name = "chardet" },
+    { name = "jiter" },
     { name = "networkx" },
     { name = "numba" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "pillow" },
+    { name = "polars" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "scikit-learn" },
@@ -3756,9 +3758,6 @@ all = [
     { name = "transformers", version = "5.12.1", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'darwin'" },
     { name = "umap-learn" },
     { name = "wordcloud" },
-]
-data = [
-    { name = "polars" },
 ]
 graph = [
     { name = "rustworkx" },
@@ -3830,9 +3829,6 @@ rag = [
     { name = "llama-index" },
     { name = "pydantic-ai" },
 ]
-schema = [
-    { name = "jiter" },
-]
 torch = [
     { name = "torch" },
     { name = "torchaudio" },
@@ -3889,9 +3885,9 @@ requires-dist = [
     { name = "instructor", marker = "extra == 'all'" },
     { name = "instructor", marker = "extra == 'modern'" },
     { name = "instructor", marker = "extra == 'rag'" },
+    { name = "jiter" },
     { name = "jiter", marker = "extra == 'all'" },
     { name = "jiter", marker = "extra == 'modern'" },
-    { name = "jiter", marker = "extra == 'schema'" },
     { name = "keybert", marker = "extra == 'all'" },
     { name = "keybert", marker = "extra == 'legacy'" },
     { name = "keybert", marker = "extra == 'nlp'" },
@@ -3930,8 +3926,8 @@ requires-dist = [
     { name = "plotly", marker = "extra == 'all'" },
     { name = "plotly", marker = "extra == 'legacy'" },
     { name = "plotly", marker = "extra == 'viz'" },
+    { name = "polars" },
     { name = "polars", marker = "extra == 'all'" },
-    { name = "polars", marker = "extra == 'data'" },
     { name = "polars", marker = "extra == 'modern'" },
     { name = "prometheus-client", marker = "extra == 'all'" },
     { name = "prometheus-client", marker = "extra == 'modern'" },

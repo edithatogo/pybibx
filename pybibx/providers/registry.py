@@ -314,7 +314,7 @@ DEFAULT_PROVIDER_REGISTRY = ProviderRegistry(
             docs_url="https://info.arxiv.org/help/api/user-manual.html",
             rate_limit_per_second=0.33,
             capabilities=(ProviderCapability.PREPRINT_SERVER, ProviderCapability.METADATA_SEARCH),
-            supported_input_formats=(InputFormat.XML,),
+            supported_input_formats=(InputFormat.XML, InputFormat.JSON),
             supported_output_formats=(OutputFormat.JSONL, OutputFormat.PARQUET),
             endpoints=(ProviderEndpoint(name="query", path="/query", output_format=OutputFormat.JSONL),),
             fixtures=(_json_fixture(ProviderName.ARXIV, "Minimal normalized arXiv fixture payload."),),
