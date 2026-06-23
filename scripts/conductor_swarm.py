@@ -192,6 +192,7 @@ def assignment_plan() -> dict[str, object]:
             "Verify Codex CLI can run non-interactively.",
             "Verify Cline CLI exists.",
             "Verify Cline provider/model config for deepseek-v4-flash; otherwise block the Cline lane.",
+            "Use Codex swarm-review assignments while cline config --json requires an interactive TTY.",
         ],
         "lanes": {
             "codex_orchestrator": {
@@ -208,9 +209,11 @@ def assignment_plan() -> dict[str, object]:
             "codex_swarm_fallback": {
                 "runner": "in-session multi-agent tool",
                 "model": CODEX_MODEL,
-                "role": "parallel review/exploration/verification when Cline is unavailable",
+                "role": "parallel review/exploration/verification when Cline is unavailable or non-TTY blocked",
             },
         },
+        "active_fallback": "codex_swarm_fallback",
+        "cline_blocker": "cline config --json requires an interactive TTY in this Codex session",
     }
 
 
@@ -299,20 +302,17 @@ def prompt_for(lane: str, phase: str) -> str:
     )
     if lane == "codex":
         return (
-            common
-            + "\nRole: Codex gpt-5.5 orchestrator. Address blockers first, integrate worker output, "
+            common + "\nRole: Codex gpt-5.5 orchestrator. Address blockers first, integrate worker output, "
             "verify Conductor evidence, run quality gates, and commit only after checks pass.\n"
         )
     if lane == "cline":
         return (
-            common
-            + "\nRole: Cline deepseek-v4-flash external worker. Use an isolated worktree. "
+            common + "\nRole: Cline deepseek-v4-flash external worker. Use an isolated worktree. "
             "Do not mark Conductor tasks complete. Return evidence for Codex review.\n"
         )
     if lane == "swarm-review":
         return (
-            common
-            + "\nRole: Codex swarm reviewer. Inspect only the assigned scope and produce concise "
+            common + "\nRole: Codex swarm reviewer. Inspect only the assigned scope and produce concise "
             "findings with file references. Do not edit files unless explicitly assigned ownership.\n"
         )
     raise SystemExit(f"unknown lane: {lane}")

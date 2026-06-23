@@ -11,6 +11,7 @@ This file defines how PyBibX Conductor tracks should be orchestrated across Code
 - A local `swarm` skill file was not found in the available skill directories.
 - The current session exposes multi-agent sub-agents, including `gpt-5.5`, through the in-session multi-agent tool.
 - Cline/DeepSeek availability means the CLI and provider/model are usable for the specific checkout; CLI presence alone is not enough to mark that lane verified.
+- Current blocker: this non-TTY Codex session cannot verify `cline config --json` because Cline requires an interactive TTY. Until that is resolved in an interactive shell, use Codex sub-agents for any needed parallel worker lanes.
 
 ## Lanes
 
@@ -50,7 +51,7 @@ cline \
   "Work only on the assigned Conductor phase. Do not revert others' edits. Report changed files and verification."
 ```
 
-If the `deepseek-v4-flash` provider/model is not configured, record the blocker in the active track and use the Codex swarm fallback for local progress.
+If the `deepseek-v4-flash` provider/model is not configured, or if `cline config --json` is blocked by a non-TTY session, record the blocker in the active track and use the Codex swarm fallback for local progress.
 
 ### Codex Swarm Fallback Lane
 
@@ -75,10 +76,10 @@ If the `deepseek-v4-flash` provider/model is not configured, record the blocker 
 | --- | --- | --- | --- |
 | Repository and tooling foundation | Codex `gpt-5.5` | Cline `deepseek-v4-flash` | Codex owns final config; Cline can draft candidate files in an isolated worktree. |
 | Schema, settings, and versioning | Codex `gpt-5.5` | Codex swarm | Keep schema decisions under orchestrator control. |
-| Provider and ontology foundation | Codex `gpt-5.5` | Cline `deepseek-v4-flash` | Cline can scaffold provider fixtures/adapters with disjoint file ownership. |
-| Processing, graphs, and data quality | Codex `gpt-5.5` | Cline `deepseek-v4-flash` | Use isolated worktrees for Polars/RustWorkX slices. |
+| Provider and ontology foundation | Codex `gpt-5.5` | Codex swarm | Cline/DeepSeek remains blocked in this non-TTY session; use Codex sub-agents with disjoint file ownership. |
+| Processing, graphs, and data quality | Codex `gpt-5.5` | Codex swarm | Use Codex sub-agents for independent Polars/RustWorkX/data-quality slices while Cline is blocked. |
 | AI, RAG, and local execution | Codex `gpt-5.5` | Codex swarm | Security-sensitive boundaries remain under Codex review. |
-| Observability, UI, and reporting | Codex `gpt-5.5` | Cline `deepseek-v4-flash` | Cline can draft docs/UI prototypes; Codex verifies. |
+| Observability, UI, and reporting | Codex `gpt-5.5` | Codex swarm | Use Codex sub-agents for docs/UI/report reviews while Cline is blocked. |
 | Verification and iteration | Codex `gpt-5.5` | Codex swarm | Swarm agents can run independent checklist reviews. |
 
 ## Verification
