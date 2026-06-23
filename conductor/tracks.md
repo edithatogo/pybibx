@@ -31,3 +31,8 @@ This file tracks major tracks for the project. Each track has its own detailed p
 
 - [x] **Track: Ontology And Graph Core**
   *Link: [./tracks/ontology_graph_core_20260624/](./tracks/ontology_graph_core_20260624/)*
+
+---
+
+- [x] **Track: Full-Text RAG**
+  *Link: [./tracks/full_text_rag_20260624/](./tracks/full_text_rag_20260624/)*
