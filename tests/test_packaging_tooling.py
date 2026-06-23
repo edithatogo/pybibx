@@ -32,7 +32,9 @@ def test_dependency_groups_separate_legacy_and_modern_stacks() -> None:
     dependency_groups = pyproject["dependency-groups"]
 
     assert isinstance(extras, dict)
-    assert "pydantic>=2" in extras["schema"]
+    assert "pydantic>=2" in pyproject["project"]["dependencies"]  # type: ignore[index]
+    assert "pydantic-settings" in pyproject["project"]["dependencies"]  # type: ignore[index]
+    assert "jiter" in extras["schema"]
     assert "polars" in extras["data"]
     assert "rustworkx" in extras["graph"]
     assert "lancedb" in extras["rag"]

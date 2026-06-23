@@ -27,6 +27,8 @@ dependencies = [
   "numpy",
   "pandas",
   "Pillow",
+  "pydantic>=2",
+  "pydantic-settings",
   "scikit-learn",
   "scipy",
 ]
@@ -53,7 +55,7 @@ nlp = [
 ]
 ai = ["google-generativeai", "llmx", "openai"]
 torch = ["torch", "torchaudio", "torchvision"]
-schema = ["jiter", "pydantic>=2", "pydantic-settings"]
+schema = ["jiter"]
 data = ["polars"]
 graph = ["rustworkx"]
 rag = ["docling", "dspy", "fastembed", "instructor", "lancedb", "llama-index", "pydantic-ai"]

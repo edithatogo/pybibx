@@ -11,3 +11,8 @@ This file tracks major tracks for the project. Each track has its own detailed p
 
 - [x] **Track: Packaging Tooling Foundation**
   *Link: [./tracks/packaging_tooling_foundation_20260617/](./tracks/packaging_tooling_foundation_20260617/)*
+
+---
+
+- [x] **Track: Schema Settings Versioning**
+  *Link: [./tracks/schema_settings_versioning_20260624/](./tracks/schema_settings_versioning_20260624/)*
