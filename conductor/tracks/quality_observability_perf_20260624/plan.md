@@ -9,4 +9,4 @@
 - [x] Add pytest-gremlins mutation-test specs.
 - [x] Add Pixi task discovery for profiling and mutation lanes.
 - [x] Run repository verification gates.
-- [ ] Commit, push, and check remote CI.
+- [x] Commit, push, and check remote CI.

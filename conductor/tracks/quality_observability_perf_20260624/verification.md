@@ -22,6 +22,8 @@ Local verification completed on 2026-06-24.
 - `ty`: all checks passed.
 - `check_conductor_swarm.py`: conductor swarm smoke ok.
 - `git diff --check`: no whitespace errors.
+- GitHub Actions `quality`: passed on pushed commit `bd29fad10b061681d393078760283fbd5292aa54`.
+  Run: https://github.com/edithatogo/pybibx/actions/runs/28047315548
 
 ## Scope Notes
 
