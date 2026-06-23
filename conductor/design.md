@@ -83,6 +83,20 @@ flowchart TD
     Typed --> Validate[Schema and provenance validation]
 ```
 
+## UI And Reports
+
+```mermaid
+flowchart LR
+    Works[Normalized Work records] --> CSL[CSL-JSON export]
+    Works --> Notes[BibLib/Obsidian Markdown notes]
+    Evidence[Evidence sets] --> Claims[Citation-safe report claims]
+    Citations[CiTO citation edges] --> Claims
+    Claims --> Markdown[PapersFlow-style Markdown report]
+    Claims --> Reflex[Optional Reflex dashboard]
+    Citations --> GraphExport[Cosmograph graph data export]
+    GraphExport --> TimeTravel[Later GPU time-travel graph UI]
+```
+
 ## Local Runtime And Rust Bridge
 
 ```mermaid
@@ -150,4 +164,3 @@ flowchart TD
     Review --> Verify[Conductor verification gates]
     Verify --> Commit[Orchestrator-owned commit]
 ```
-

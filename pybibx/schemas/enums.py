@@ -78,3 +78,5 @@ class ExportProfile(StrEnum):
     EVIDENCE_REPORT = "evidence-report"
     CITATION_GRAPH = "citation-graph"
     CSL_BIBLIOGRAPHY = "csl-bibliography"
+    BIBLIB_MARKDOWN = "biblib-markdown"
+    UI_REPORT_PLAN = "ui-report-plan"

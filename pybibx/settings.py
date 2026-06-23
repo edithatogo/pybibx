@@ -56,6 +56,14 @@ class QualitySettings(StrictSettingsModel):
     profile_output_path: Path = Path(".pybibx/profiles")
 
 
+class UiReportSettings(StrictSettingsModel):
+    reflex_enabled: bool = False
+    cosmograph_enabled: bool = False
+    citation_safe_reports_enabled: bool = True
+    biblib_markdown_enabled: bool = True
+    output_path: Path = Path(".pybibx/reports")
+
+
 class FeatureGateSettings(StrictSettingsModel):
     enable_legacy_runtime: bool = True
     enable_hosted_llms: bool = False
@@ -98,6 +106,7 @@ class PyBibXSettings(BaseSettings):
     storage: StorageSettings = Field(default_factory=StorageSettings)
     observability: ObservabilitySettings = Field(default_factory=ObservabilitySettings)
     quality: QualitySettings = Field(default_factory=QualitySettings)
+    ui_reports: UiReportSettings = Field(default_factory=UiReportSettings)
     features: FeatureGateSettings = Field(default_factory=FeatureGateSettings)
 
     def provider_settings(self, provider: ProviderName) -> ProviderSettings | None:

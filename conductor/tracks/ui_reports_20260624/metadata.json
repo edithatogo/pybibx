@@ -1,0 +1,8 @@
+{
+  "id": "ui_reports_20260624",
+  "status": "completed",
+  "title": "UI/Reports",
+  "created_at": "2026-06-23T18:23:00Z",
+  "updated_at": "2026-06-23T18:23:00Z",
+  "summary": "Add maintained report/export contracts for citation-safe reports, BibLib-style Markdown, CSL-JSON, and optional Reflex/Cosmograph UI planning."
+}

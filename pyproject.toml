@@ -63,6 +63,8 @@ data = []
 quality = ["deepchecks", "great-expectations", "kedro"]
 graph = []
 rag = ["docling", "dspy", "fastembed", "instructor", "lancedb", "llama-index", "pydantic-ai"]
+reports = []
+ui = ["reflex"]
 observability = [
   "logfire",
   "loguru",
@@ -110,6 +112,7 @@ modern = [
   "pydantic>=2",
   "polars",
   "prometheus-client",
+  "reflex",
   "rustworkx",
 ]
 all = [
@@ -142,6 +145,7 @@ all = [
   "pydantic-ai",
   "pydantic-settings",
   "pydantic>=2",
+  "reflex",
   "rustworkx",
   "sentence-transformers",
   "sentencepiece",

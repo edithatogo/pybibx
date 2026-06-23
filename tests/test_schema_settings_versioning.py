@@ -146,6 +146,8 @@ def test_settings_defaults_and_environment_overrides(monkeypatch: pytest.MonkeyP
     assert settings.observability.loguru_enabled is True
     assert settings.quality.great_expectations_enabled is True
     assert settings.quality.pytest_gremlins_enabled is True
+    assert settings.ui_reports.citation_safe_reports_enabled is True
+    assert settings.ui_reports.reflex_enabled is False
     assert openalex is not None
     assert openalex.enabled is True
     assert scopus is not None

@@ -47,6 +47,9 @@ def test_dependency_groups_separate_legacy_and_modern_stacks() -> None:
     assert "logfire" in extras["observability"]
     assert "opentelemetry-sdk" in extras["observability"]
     assert "lancedb" in extras["rag"]
+    assert extras["reports"] == []
+    assert "reflex" in extras["ui"]
+    assert "reflex" in extras["modern"]
     assert "scalene" in dependency_groups["dev"]  # type: ignore[index]
     assert "pytest-gremlins" in dependency_groups["dev"]  # type: ignore[index]
 
