@@ -19,6 +19,7 @@ vale = "*"
 
 [feature.dev.tasks]
 sync = "uv sync --group dev"
+# Non-baseline Python 3.14 compatibility probe: legacy extras include gensim.
 sync-all-extras = "uv sync --all-extras --group dev"
 lint = "ruff check pybibx setup.py tests"
 format-check = "ruff format --check pybibx setup.py tests"

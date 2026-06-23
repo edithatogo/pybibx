@@ -7,6 +7,7 @@
 - [Tech Stack](./tech-stack.md)
 - [Requirements](./requirements.md)
 - [Design](./design.md)
+- [Dependency Policy](./dependency-policy.md)
 - [Agent Orchestration](./agent-orchestration.md)
 
 ## Workflow

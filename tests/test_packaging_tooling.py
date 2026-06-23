@@ -70,6 +70,19 @@ def test_quality_tool_configs_are_present_and_scoped() -> None:
     assert "config:recommended" in renovate["extends"]
 
 
+def test_python314_baseline_sync_does_not_require_all_extras() -> None:
+    pixi = read_toml("pixi.toml")
+    workflow = (REPO / ".github" / "workflows" / "quality.yml").read_text(encoding="utf-8")
+    dependency_policy = (REPO / "conductor" / "dependency-policy.md").read_text(encoding="utf-8")
+
+    assert "run: uv sync --group dev" in workflow
+    assert "--all-extras" not in workflow
+    assert pixi["feature"]["dev"]["tasks"]["sync"] == "uv sync --group dev"  # type: ignore[index]
+    assert pixi["feature"]["dev"]["tasks"]["sync-all-extras"] == "uv sync --all-extras --group dev"  # type: ignore[index]
+    assert "not a baseline-safe command on Python 3.14" in dependency_policy
+    assert "gensim" in dependency_policy
+
+
 def test_prose_and_ci_configs_reference_required_tools() -> None:
     vale = (REPO / ".vale.ini").read_text(encoding="utf-8")
     workflow = (REPO / ".github" / "workflows" / "quality.yml").read_text(encoding="utf-8")
