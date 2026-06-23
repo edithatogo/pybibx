@@ -7,4 +7,4 @@
 - [x] Add evidence-grounded extraction and evidence-set builders.
 - [x] Cover the full-text RAG contracts with tests.
 - [x] Run repository verification gates.
-- [ ] Commit, push, and check remote CI.
+- [x] Commit, push, and check remote CI.
