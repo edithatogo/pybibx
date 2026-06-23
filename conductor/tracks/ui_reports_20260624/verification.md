@@ -11,4 +11,8 @@ Local verification completed on 2026-06-23 UTC:
 - `python scripts/check_conductor_swarm.py`: passed
 - `git diff --check`: passed
 
-Remote verification will be recorded after push.
+Remote verification:
+
+- GitHub Actions `quality` for commit `4757000d5eb6f053f37681b94ec45bf262dab7ad`: passed
+- Run ID: `28047783873`
+- URL: `https://github.com/edithatogo/pybibx/actions/runs/28047783873`
