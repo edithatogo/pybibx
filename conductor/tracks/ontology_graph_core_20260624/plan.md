@@ -7,4 +7,4 @@
 - [x] Cover ontology validation and graph parity with tests.
 - [x] Run repository verification gates.
 - [x] Commit the implementation.
-- [ ] Push and check remote CI.
+- [x] Push and check remote CI.
