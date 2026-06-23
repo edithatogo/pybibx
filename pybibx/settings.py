@@ -39,10 +39,21 @@ class StorageSettings(StrictSettingsModel):
 
 
 class ObservabilitySettings(StrictSettingsModel):
+    loguru_enabled: bool = True
     log_level: str = "INFO"
     logfire_enabled: bool = False
     opentelemetry_enabled: bool = False
+    otlp_endpoint: str | None = None
     prometheus_enabled: bool = False
+
+
+class QualitySettings(StrictSettingsModel):
+    great_expectations_enabled: bool = True
+    deepchecks_enabled: bool = True
+    kedro_enabled: bool = True
+    scalene_enabled: bool = True
+    pytest_gremlins_enabled: bool = True
+    profile_output_path: Path = Path(".pybibx/profiles")
 
 
 class FeatureGateSettings(StrictSettingsModel):
@@ -86,6 +97,7 @@ class PyBibXSettings(BaseSettings):
     runtime: RuntimeSettings = Field(default_factory=RuntimeSettings)
     storage: StorageSettings = Field(default_factory=StorageSettings)
     observability: ObservabilitySettings = Field(default_factory=ObservabilitySettings)
+    quality: QualitySettings = Field(default_factory=QualitySettings)
     features: FeatureGateSettings = Field(default_factory=FeatureGateSettings)
 
     def provider_settings(self, provider: ProviderName) -> ProviderSettings | None:

@@ -39,8 +39,15 @@ def test_dependency_groups_separate_legacy_and_modern_stacks() -> None:
     assert "rustworkx" in pyproject["project"]["dependencies"]  # type: ignore[index]
     assert extras["schema"] == []
     assert extras["data"] == []
+    assert "great-expectations" in extras["quality"]
+    assert "deepchecks" in extras["quality"]
+    assert "kedro" in extras["quality"]
     assert extras["graph"] == []
+    assert "loguru" in extras["observability"]
+    assert "logfire" in extras["observability"]
+    assert "opentelemetry-sdk" in extras["observability"]
     assert "lancedb" in extras["rag"]
+    assert "scalene" in dependency_groups["dev"]  # type: ignore[index]
     assert "pytest-gremlins" in dependency_groups["dev"]  # type: ignore[index]
 
 
@@ -55,6 +62,8 @@ def test_quality_tool_configs_are_present_and_scoped() -> None:
     assert pyright["typeCheckingMode"] == "strict"
     assert pyright["include"] == ["pybibx"]
     assert pixi["feature"]["dev"]["tasks"]["swarm-doctor"] == "python scripts/conductor_swarm.py doctor"  # type: ignore[index]
+    assert pixi["feature"]["dev"]["tasks"]["mutate"] == "uv run pytest-gremlins tests"  # type: ignore[index]
+    assert "scalene --json" in pixi["feature"]["dev"]["tasks"]["profile-ingestion"]  # type: ignore[index]
     assert "config:recommended" in renovate["extends"]
 
 

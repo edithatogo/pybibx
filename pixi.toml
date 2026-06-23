@@ -13,6 +13,8 @@ ruff = "*"
 pyright = "*"
 pytest = "*"
 pytest-cov = "*"
+pytest-gremlins = "*"
+scalene = "*"
 vale = "*"
 
 [feature.dev.tasks]
@@ -22,6 +24,8 @@ lint = "ruff check pybibx setup.py tests"
 format-check = "ruff format --check pybibx setup.py tests"
 typecheck = "pyright"
 test = "pytest"
+mutate = "uv run pytest-gremlins tests"
+profile-ingestion = "uv run scalene --json --outfile .pybibx/profiles/ingestion.scalene.json pybibx/ingestion/parsers.py"
 prose = "vale conductor README.md"
 swarm-doctor = "python scripts/conductor_swarm.py doctor"
 

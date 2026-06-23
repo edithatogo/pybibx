@@ -41,3 +41,8 @@ This file tracks major tracks for the project. Each track has its own detailed p
 
 - [x] **Track: AI/Agent Layer**
   *Link: [./tracks/ai_agent_layer_20260624/](./tracks/ai_agent_layer_20260624/)*
+
+---
+
+- [x] **Track: Quality, Observability, Perf**
+  *Link: [./tracks/quality_observability_perf_20260624/](./tracks/quality_observability_perf_20260624/)*

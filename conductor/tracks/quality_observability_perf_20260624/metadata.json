@@ -1,0 +1,8 @@
+{
+  "id": "quality_observability_perf_20260624",
+  "title": "Quality, Observability, Perf",
+  "status": "completed",
+  "created_at": "2026-06-24",
+  "updated_at": "2026-06-24",
+  "description": "Add optional data-quality, observability, performance-profiling, and mutation-testing lanes."
+}

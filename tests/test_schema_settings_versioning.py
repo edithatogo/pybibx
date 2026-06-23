@@ -143,6 +143,9 @@ def test_settings_defaults_and_environment_overrides(monkeypatch: pytest.MonkeyP
     assert settings.runtime.default_model == "local-bibliometrics"
     assert settings.features.enable_hosted_llms is True
     assert settings.observability.log_level == "DEBUG"
+    assert settings.observability.loguru_enabled is True
+    assert settings.quality.great_expectations_enabled is True
+    assert settings.quality.pytest_gremlins_enabled is True
     assert openalex is not None
     assert openalex.enabled is True
     assert scopus is not None

@@ -60,6 +60,7 @@ ai = ["dspy", "google-generativeai", "instructor", "llama-index", "llmx", "opena
 torch = ["torch", "torchaudio", "torchvision"]
 schema = []
 data = []
+quality = ["deepchecks", "great-expectations", "kedro"]
 graph = []
 rag = ["docling", "dspy", "fastembed", "instructor", "lancedb", "llama-index", "pydantic-ai"]
 observability = [
@@ -92,9 +93,12 @@ legacy = [
 modern = [
   "docling",
   "dspy",
+  "deepchecks",
   "fastembed",
+  "great-expectations",
   "instructor",
   "jiter",
+  "kedro",
   "lancedb",
   "llama-index",
   "logfire",
@@ -113,13 +117,16 @@ all = [
   "bertopic",
   "docling",
   "dspy",
+  "deepchecks",
   "fastembed",
   "flask",
   "gensim",
   "google-generativeai",
+  "great-expectations",
   "instructor",
   "jiter",
   "keybert",
+  "kedro",
   "lancedb",
   "llama-index",
   "llmx",
