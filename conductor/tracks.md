@@ -36,3 +36,8 @@ This file tracks major tracks for the project. Each track has its own detailed p
 
 - [x] **Track: Full-Text RAG**
   *Link: [./tracks/full_text_rag_20260624/](./tracks/full_text_rag_20260624/)*
+
+---
+
+- [x] **Track: AI/Agent Layer**
+  *Link: [./tracks/ai_agent_layer_20260624/](./tracks/ai_agent_layer_20260624/)*

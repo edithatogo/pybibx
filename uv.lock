@@ -3718,9 +3718,13 @@ dependencies = [
 
 [package.optional-dependencies]
 ai = [
+    { name = "dspy" },
     { name = "google-generativeai" },
+    { name = "instructor" },
+    { name = "llama-index" },
     { name = "llmx" },
     { name = "openai" },
+    { name = "pydantic-ai" },
 ]
 all = [
     { name = "bert-extractive-summarizer" },
@@ -3865,6 +3869,7 @@ requires-dist = [
     { name = "docling", marker = "extra == 'all'" },
     { name = "docling", marker = "extra == 'modern'" },
     { name = "docling", marker = "extra == 'rag'" },
+    { name = "dspy", marker = "extra == 'ai'" },
     { name = "dspy", marker = "extra == 'all'" },
     { name = "dspy", marker = "extra == 'modern'" },
     { name = "dspy", marker = "extra == 'rag'" },
@@ -3880,6 +3885,7 @@ requires-dist = [
     { name = "google-generativeai", marker = "extra == 'ai'" },
     { name = "google-generativeai", marker = "extra == 'all'" },
     { name = "google-generativeai", marker = "extra == 'legacy'" },
+    { name = "instructor", marker = "extra == 'ai'" },
     { name = "instructor", marker = "extra == 'all'" },
     { name = "instructor", marker = "extra == 'modern'" },
     { name = "instructor", marker = "extra == 'rag'" },
@@ -3892,6 +3898,7 @@ requires-dist = [
     { name = "lancedb", marker = "extra == 'all'" },
     { name = "lancedb", marker = "extra == 'modern'" },
     { name = "lancedb", marker = "extra == 'rag'" },
+    { name = "llama-index", marker = "extra == 'ai'" },
     { name = "llama-index", marker = "extra == 'all'" },
     { name = "llama-index", marker = "extra == 'modern'" },
     { name = "llama-index", marker = "extra == 'rag'" },
@@ -3933,6 +3940,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2" },
     { name = "pydantic", marker = "extra == 'all'", specifier = ">=2" },
     { name = "pydantic", marker = "extra == 'modern'", specifier = ">=2" },
+    { name = "pydantic-ai", marker = "extra == 'ai'" },
     { name = "pydantic-ai", marker = "extra == 'all'" },
     { name = "pydantic-ai", marker = "extra == 'modern'" },
     { name = "pydantic-ai", marker = "extra == 'rag'" },

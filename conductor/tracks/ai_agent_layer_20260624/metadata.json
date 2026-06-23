@@ -1,0 +1,8 @@
+{
+  "id": "ai_agent_layer_20260624",
+  "title": "AI/Agent Layer",
+  "status": "completed",
+  "created_at": "2026-06-24",
+  "updated_at": "2026-06-24",
+  "description": "Add optional typed orchestration contracts for PydanticAI, Instructor, DSPy, LlamaIndex, Ollama, and mistral.rs."
+}

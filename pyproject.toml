@@ -56,7 +56,7 @@ nlp = [
   "transformers",
   "umap-learn",
 ]
-ai = ["google-generativeai", "llmx", "openai"]
+ai = ["dspy", "google-generativeai", "instructor", "llama-index", "llmx", "openai", "pydantic-ai"]
 torch = ["torch", "torchaudio", "torchvision"]
 schema = []
 data = []
