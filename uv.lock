@@ -3711,6 +3711,7 @@ dependencies = [
     { name = "polars" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "rustworkx" },
     { name = "scikit-learn" },
     { name = "scipy" },
 ]
@@ -3758,9 +3759,6 @@ all = [
     { name = "transformers", version = "5.12.1", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'darwin'" },
     { name = "umap-learn" },
     { name = "wordcloud" },
-]
-graph = [
-    { name = "rustworkx" },
 ]
 legacy = [
     { name = "bert-extractive-summarizer" },
@@ -3941,8 +3939,8 @@ requires-dist = [
     { name = "pydantic-settings" },
     { name = "pydantic-settings", marker = "extra == 'all'" },
     { name = "pydantic-settings", marker = "extra == 'modern'" },
+    { name = "rustworkx" },
     { name = "rustworkx", marker = "extra == 'all'" },
-    { name = "rustworkx", marker = "extra == 'graph'" },
     { name = "rustworkx", marker = "extra == 'modern'" },
     { name = "scikit-learn" },
     { name = "scipy" },

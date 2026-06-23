@@ -26,3 +26,8 @@ This file tracks major tracks for the project. Each track has its own detailed p
 
 - [x] **Track: Polars Jiter Ingestion**
   *Link: [./tracks/polars_jiter_ingestion_20260624/](./tracks/polars_jiter_ingestion_20260624/)*
+
+---
+
+- [x] **Track: Ontology And Graph Core**
+  *Link: [./tracks/ontology_graph_core_20260624/](./tracks/ontology_graph_core_20260624/)*

@@ -36,9 +36,10 @@ def test_dependency_groups_separate_legacy_and_modern_stacks() -> None:
     assert "polars" in pyproject["project"]["dependencies"]  # type: ignore[index]
     assert "pydantic>=2" in pyproject["project"]["dependencies"]  # type: ignore[index]
     assert "pydantic-settings" in pyproject["project"]["dependencies"]  # type: ignore[index]
+    assert "rustworkx" in pyproject["project"]["dependencies"]  # type: ignore[index]
     assert extras["schema"] == []
     assert extras["data"] == []
-    assert "rustworkx" in extras["graph"]
+    assert extras["graph"] == []
     assert "lancedb" in extras["rag"]
     assert "pytest-gremlins" in dependency_groups["dev"]  # type: ignore[index]
 

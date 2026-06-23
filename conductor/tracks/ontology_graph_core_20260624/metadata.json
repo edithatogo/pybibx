@@ -1,0 +1,8 @@
+{
+  "id": "ontology_graph_core_20260624",
+  "title": "Ontology And Graph Core",
+  "status": "completed",
+  "created_at": "2026-06-24",
+  "updated_at": "2026-06-24",
+  "description": "Add additive ontology models and RustWorkX graph builders with NetworkX export compatibility."
+}
