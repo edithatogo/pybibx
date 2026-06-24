@@ -58,4 +58,5 @@ Local verification refreshed on 2026-06-24.
 
 ## Remote CI
 
-- Pending final closeout commit and GitHub Actions run.
+- GitHub Actions `quality`: passed on pushed review-fix commit `bb8bb28ba9114c0017f8125b43e9cb2660b867cf`.
+  Run: https://github.com/edithatogo/pybibx/actions/runs/28073673996
