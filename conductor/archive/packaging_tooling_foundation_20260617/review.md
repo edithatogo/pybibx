@@ -16,8 +16,8 @@ Reviewed at `2026-06-24T02:56:01Z`.
 - Fixed incomplete checkpoint detail by explicitly recording expected files, acceptance criteria, unrelated-file scope, and boundaries in `verification.md`.
 - Fixed ty configuration coverage by adding `[tool.ty.environment]`, `[tool.ty.src]`, and `[tool.ty.rules]` to `pyproject.toml`.
 - Fixed ty regression coverage by asserting the ty configuration in `tests/test_packaging_tooling.py`.
-- The active registry state is intentionally left for the archive commit: move the track to `conductor/archive/packaging_tooling_foundation_20260617` and remove the active `conductor/tracks.md` entry after this verification commit is pushed and green.
+- Fixed active registry state by moving the track to `conductor/archive/packaging_tooling_foundation_20260617` and removing the active `conductor/tracks.md` entry after the verification commit passed CI.
 
 ## Result
 
-The packaging tooling foundation is implemented and reviewed. It is ready for a verification commit, GitHub Actions validation, and then an archive commit after the final active-track reference is removed.
+The packaging tooling foundation is implemented, reviewed, CI-verified, and archived.

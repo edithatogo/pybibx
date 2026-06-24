@@ -4,11 +4,6 @@ This file tracks major tracks for the project. Each track has its own detailed p
 
 ---
 
-- [x] **Track: Packaging Tooling Foundation**
-  *Link: [./tracks/packaging_tooling_foundation_20260617/](./tracks/packaging_tooling_foundation_20260617/)*
-
----
-
 - [x] **Track: Provider Registry Fixtures**
   *Link: [./tracks/provider_registry_fixtures_20260624/](./tracks/provider_registry_fixtures_20260624/)*
 

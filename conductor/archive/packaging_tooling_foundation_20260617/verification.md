@@ -40,6 +40,7 @@ Verified at `2026-06-24T02:56:01Z`.
 - The workflow was corrected to baseline `uv sync --group dev`; the all-extras path remains explicit and non-baseline.
 - Superseding `quality` run `27626228033` passed for the packaging baseline fix commit `d8796d6`.
 - Current `main` also has successful `quality` run `28071672119` for commit `c323534e0172e6a2086b9e9149cd00e1bcf63076`.
+- Verification commit `9b8fd7e2e75feb461df8b7a09874b3472c444839` passed GitHub Actions `quality` run `28071988947`.
 
 ## Known Boundaries
 
