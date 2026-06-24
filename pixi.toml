@@ -27,6 +27,7 @@ typecheck = "pyright"
 test = "pytest"
 mutate = "uv run pytest-gremlins tests"
 profile-ingestion = "uv run scalene --json --outfile .pybibx/profiles/ingestion.scalene.json pybibx/ingestion/parsers.py"
+profile-graph = "uv run scalene --json --outfile .pybibx/profiles/graph.scalene.json pybibx/graph/builders.py"
 prose = "vale conductor README.md"
 swarm-doctor = "python scripts/conductor_swarm.py doctor"
 

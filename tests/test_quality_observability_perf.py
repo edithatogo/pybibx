@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
-import importlib
+import subprocess
+import sys
+import textwrap
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
+from pybibx.providers import DEFAULT_PROVIDER_REGISTRY
 from pybibx.quality import (
     DataQualityLane,
     KedroNodeSpec,
@@ -24,14 +27,38 @@ from pybibx.schemas import ProviderName
 from pybibx.settings import ObservabilitySettings, PyBibXSettings, QualitySettings
 
 EXPECTED_DEFAULT_SUITE_COUNT = 4
-EXPECTED_PLAN_SUITE_COUNT = 6
 EXPECTED_PROFILE_COUNT = 2
 
 
 def test_quality_package_imports_without_optional_quality_dependencies() -> None:
-    module = importlib.import_module("pybibx.quality")
+    code = textwrap.dedent(
+        """
+        import sys
+        from importlib.abc import MetaPathFinder
 
-    assert module.DataQualityLane.GREAT_EXPECTATIONS.value == "great-expectations"
+        blocked = {
+            'great_expectations', 'deepchecks', 'kedro', 'loguru', 'logfire',
+            'opentelemetry', 'prometheus_client', 'scalene', 'pytest_gremlins',
+            'pandas', 'numpy', 'scipy', 'sklearn', 'torch', 'transformers',
+            'gensim', 'flask', 'pybibx.base', 'pybibx.base.pbx',
+        }
+
+        class Blocker(MetaPathFinder):
+            def find_spec(self, fullname, path=None, target=None):
+                if any(fullname == item or fullname.startswith(f'{item}.') for item in blocked):
+                    raise AssertionError(fullname)
+                return None
+
+        sys.meta_path.insert(0, Blocker())
+        import pybibx.quality as quality
+
+        assert quality.DataQualityLane.GREAT_EXPECTATIONS.value == 'great-expectations'
+        loaded = blocked.intersection(sys.modules)
+        assert not loaded, sorted(loaded)
+        """,
+    )
+
+    subprocess.run([sys.executable, "-c", code], check=True)  # noqa: S603
 
 
 def test_default_data_quality_suites_cover_great_expectations_and_deepchecks() -> None:
@@ -63,6 +90,17 @@ def test_kedro_pipeline_validates_unique_nodes_and_node_output_dependencies() ->
 
     with pytest.raises(ValidationError, match="missing node outputs"):
         create_kedro_pipeline((KedroNodeSpec(name="bad", inputs=("node:missing",), outputs=("node:out",)),))
+
+    with pytest.raises(ValidationError, match="outputs must be unique"):
+        create_kedro_pipeline(
+            (
+                KedroNodeSpec(name="first", outputs=("node:shared",)),
+                KedroNodeSpec(name="second", outputs=("node:shared",)),
+            ),
+        )
+
+    with pytest.raises(ValidationError, match="cannot consume its own outputs"):
+        create_kedro_pipeline((KedroNodeSpec(name="cycle", inputs=("node:self",), outputs=("node:self",)),))
 
 
 def test_observability_plan_respects_loguru_logfire_otel_and_prometheus_settings() -> None:
@@ -109,9 +147,36 @@ def test_scalene_and_pytest_gremlins_specs_generate_reviewable_commands() -> Non
 def test_default_quality_observability_plan_combines_all_requested_lanes() -> None:
     settings = PyBibXSettings(quality=QualitySettings(profile_output_path=Path(".profiles")))
     plan = build_default_quality_observability_plan(settings)
+    fixture_providers = tuple(spec.provider for spec in DEFAULT_PROVIDER_REGISTRY.specs if spec.fixtures)
 
-    assert len(plan.data_quality_suites) == EXPECTED_PLAN_SUITE_COUNT
+    assert len(plan.data_quality_suites) == len(fixture_providers) * 2
+    assert {suite.provider for suite in plan.data_quality_suites} == set(fixture_providers)
+    assert plan.kedro_pipeline is not None
     assert plan.kedro_pipeline.pipeline_name == "pybibx-quality-ingestion"
     assert plan.observability.backends == (ObservabilityBackend.LOGURU,)
     assert len(plan.scalene_profiles) == EXPECTED_PROFILE_COUNT
+    assert {profile.target for profile in plan.scalene_profiles} == {
+        "pybibx/ingestion/parsers.py",
+        "pybibx/graph/builders.py",
+    }
+    assert plan.gremlins is not None
     assert plan.gremlins.target == "tests"
+
+
+def test_default_quality_observability_plan_honors_quality_lane_flags() -> None:
+    plan = build_default_quality_observability_plan(
+        PyBibXSettings(
+            quality=QualitySettings(
+                great_expectations_enabled=False,
+                deepchecks_enabled=False,
+                kedro_enabled=False,
+                scalene_enabled=False,
+                pytest_gremlins_enabled=False,
+            ),
+        ),
+    )
+
+    assert plan.data_quality_suites == ()
+    assert plan.kedro_pipeline is None
+    assert plan.scalene_profiles == ()
+    assert plan.gremlins is None

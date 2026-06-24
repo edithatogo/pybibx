@@ -6,5 +6,6 @@ This track adds the maintained quality, observability, and performance-planning 
 
 - [Spec](./spec.md)
 - [Plan](./plan.md)
+- [Review](./review.md)
 - [Verification](./verification.md)
-
+- [Metadata](./metadata.json)

@@ -70,6 +70,9 @@ def test_quality_tool_configs_are_present_and_scoped() -> None:
     assert pixi["feature"]["dev"]["tasks"]["swarm-doctor"] == "python scripts/conductor_swarm.py doctor"  # type: ignore[index]
     assert pixi["feature"]["dev"]["tasks"]["mutate"] == "uv run pytest-gremlins tests"  # type: ignore[index]
     assert "scalene --json" in pixi["feature"]["dev"]["tasks"]["profile-ingestion"]  # type: ignore[index]
+    assert "pybibx/ingestion/parsers.py" in pixi["feature"]["dev"]["tasks"]["profile-ingestion"]  # type: ignore[index]
+    assert "scalene --json" in pixi["feature"]["dev"]["tasks"]["profile-graph"]  # type: ignore[index]
+    assert "pybibx/graph/builders.py" in pixi["feature"]["dev"]["tasks"]["profile-graph"]  # type: ignore[index]
     assert "config:recommended" in renovate["extends"]
 
 

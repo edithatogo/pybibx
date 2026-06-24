@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Self
 
 from pydantic import Field, model_validator
 
-from pybibx.providers import ProviderCapability
-from pybibx.schemas import ProviderName
+from pybibx.providers import DEFAULT_PROVIDER_REGISTRY, ProviderCapability
+from pybibx.schemas import ProviderName  # noqa: TC001 - Pydantic resolves this model at runtime.
 from pybibx.schemas.records import StrictSchemaModel
 from pybibx.settings import PyBibXSettings
 
@@ -67,7 +67,15 @@ class KedroPipelineSpec(StrictSchemaModel):
         if len(names) != len(set(names)):
             msg = "Kedro pipeline node names must be unique"
             raise ValueError(msg)
-        produced_outputs = {output for node in self.nodes for output in node.outputs}
+        produced_output_list = [output for node in self.nodes for output in node.outputs]
+        if len(produced_output_list) != len(set(produced_output_list)):
+            msg = "Kedro pipeline node outputs must be unique"
+            raise ValueError(msg)
+        for node in self.nodes:
+            if set(node.inputs) & set(node.outputs):
+                msg = f"Kedro pipeline node cannot consume its own outputs: {node.name}"
+                raise ValueError(msg)
+        produced_outputs = set(produced_output_list)
         missing_inputs = sorted(
             input_name
             for node in self.nodes
@@ -115,33 +123,40 @@ class MutationRunSpec(StrictSchemaModel):
 
 class QualityObservabilityPlan(StrictSchemaModel):
     data_quality_suites: tuple[DataQualitySuiteSpec, ...]
-    kedro_pipeline: KedroPipelineSpec
+    kedro_pipeline: KedroPipelineSpec | None = None
     observability: ObservabilityPlan
     scalene_profiles: tuple[PerformanceProfileSpec, ...]
-    gremlins: MutationRunSpec
+    gremlins: MutationRunSpec | None = None
 
 
-def default_data_quality_suites(providers: Sequence[ProviderName]) -> tuple[DataQualitySuiteSpec, ...]:
+def default_data_quality_suites(
+    providers: Sequence[ProviderName],
+    *,
+    include_great_expectations: bool = True,
+    include_deepchecks: bool = True,
+) -> tuple[DataQualitySuiteSpec, ...]:
     suites: list[DataQualitySuiteSpec] = []
     for provider in providers:
-        suites.append(
-            GreatExpectationsSuiteSpec(
-                suite_name=f"{provider.value}-normalized-records",
-                checkpoint_name=f"{provider.value}-checkpoint",
-                provider=provider,
-                required_columns=("work_id", "title", "source_provider"),
-                expectation_count=3,
-            ),
-        )
-        suites.append(
-            DeepchecksSuiteSpec(
-                suite_name=f"{provider.value}-data-quality",
-                check_suite_name=f"{provider.value}-deepchecks",
-                provider=provider,
-                required_columns=("work_id", "title"),
-                expectation_count=2,
-            ),
-        )
+        if include_great_expectations:
+            suites.append(
+                GreatExpectationsSuiteSpec(
+                    suite_name=f"{provider.value}-normalized-records",
+                    checkpoint_name=f"{provider.value}-checkpoint",
+                    provider=provider,
+                    required_columns=("work_id", "title", "source_provider"),
+                    expectation_count=3,
+                ),
+            )
+        if include_deepchecks:
+            suites.append(
+                DeepchecksSuiteSpec(
+                    suite_name=f"{provider.value}-data-quality",
+                    check_suite_name=f"{provider.value}-deepchecks",
+                    provider=provider,
+                    required_columns=("work_id", "title"),
+                    expectation_count=2,
+                ),
+            )
     return tuple(suites)
 
 
@@ -187,16 +202,25 @@ def build_pytest_gremlins_spec(target: str = "tests", *, seed: int = 0) -> Mutat
 
 def build_default_quality_observability_plan(settings: PyBibXSettings | None = None) -> QualityObservabilityPlan:
     app_settings = settings or PyBibXSettings()
-    providers = (ProviderName.OPENALEX, ProviderName.CROSSREF, ProviderName.PUBMED)
+    quality = app_settings.quality
+    providers = tuple(spec.provider for spec in DEFAULT_PROVIDER_REGISTRY.specs if spec.fixtures)
     return QualityObservabilityPlan(
-        data_quality_suites=default_data_quality_suites(providers),
-        kedro_pipeline=create_kedro_pipeline(),
+        data_quality_suites=default_data_quality_suites(
+            providers,
+            include_great_expectations=quality.great_expectations_enabled,
+            include_deepchecks=quality.deepchecks_enabled,
+        ),
+        kedro_pipeline=create_kedro_pipeline() if quality.kedro_enabled else None,
         observability=build_observability_plan(app_settings),
         scalene_profiles=(
-            build_scalene_profile("pybibx/ingestion/parsers.py", output_dir=app_settings.quality.profile_output_path),
-            build_scalene_profile("pybibx/graph/builders.py", output_dir=app_settings.quality.profile_output_path),
+            (
+                build_scalene_profile("pybibx/ingestion/parsers.py", output_dir=quality.profile_output_path),
+                build_scalene_profile("pybibx/graph/builders.py", output_dir=quality.profile_output_path),
+            )
+            if quality.scalene_enabled
+            else ()
         ),
-        gremlins=build_pytest_gremlins_spec(),
+        gremlins=build_pytest_gremlins_spec() if quality.pytest_gremlins_enabled else None,
     )
 
 
