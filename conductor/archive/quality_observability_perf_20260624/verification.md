@@ -29,7 +29,8 @@ Local verification refreshed on 2026-06-24.
 - `conductor_swarm.py plan --json`: active fallback is Codex swarm because Cline remains blocked by non-TTY configuration.
 - `git diff --check`: no whitespace errors.
 - `vale conductor README.md`: 0 errors, 0 warnings; existing project-spelling suggestions only.
-- GitHub Actions `quality`: pending for this closeout commit until pushed.
+- GitHub Actions `quality`: passed on pushed commit `b325f65ff11f2ccf391a5438114c97624535c6ca`.
+  Run: https://github.com/edithatogo/pybibx/actions/runs/28074505146
 
 ## Scope Notes
 
@@ -45,5 +46,5 @@ Local verification refreshed on 2026-06-24.
 - Expected code paths: `pybibx/quality/lanes.py`, `pixi.toml`, `tests/test_quality_observability_perf.py`, and `tests/test_packaging_tooling.py`.
 - Expected docs: track index, review, and verification are updated with acceptance evidence.
 - Unrelated files: none intentionally changed.
-- Acceptance: all spec bullets are mapped in `review.md` and covered by local gates; remote CI remains required before archive.
-- Blockers: Cline/DeepSeek remains blocked by non-TTY config, so Codex subagents were used; GitHub Actions evidence remains pending until push.
+- Acceptance: all spec bullets are mapped in `review.md` and covered by local gates plus remote CI.
+- Blockers: Cline/DeepSeek remains blocked by non-TTY config, so Codex subagents were used; no repository-local blocker remains.
