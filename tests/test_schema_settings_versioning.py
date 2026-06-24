@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 
 import pytest
-from pydantic import ValidationError
+from pydantic import SecretStr, ValidationError
 
 from pybibx.schemas import (
     Author,
@@ -156,7 +156,7 @@ def test_settings_defaults_and_environment_overrides(monkeypatch: pytest.MonkeyP
 
 
 def test_provider_settings_validate_rate_limits_and_secret_boundaries() -> None:
-    provider = ProviderSettings(provider=ProviderName.CROSSREF, api_key="secret", rate_limit_per_second=2.5)
+    provider = ProviderSettings(provider=ProviderName.CROSSREF, api_key=SecretStr("secret"), rate_limit_per_second=2.5)
 
     assert provider.api_key is not None
     assert provider.api_key.get_secret_value() == "secret"
