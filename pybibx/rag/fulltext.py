@@ -3,7 +3,9 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping, Sequence
 from enum import StrEnum
-from typing import Self, cast
+from hashlib import sha256
+from typing import Protocol, Self, cast
+from urllib.parse import urlparse
 
 from pydantic import Field, field_validator, model_validator
 
@@ -16,6 +18,10 @@ MIN_CHUNK_CHARS = 200
 ARXIV_ABS_PREFIX = "http://arxiv.org/abs/"
 ARXIV_PDF_PREFIX = "https://arxiv.org/pdf/"
 PREPRINT_PDF_TEMPLATE = "https://www.{server}.org/content/{doi}v1.full.pdf"
+LEGAL_FULL_TEXT_SCHEME = "https"
+ARXIV_HOST = "arxiv.org"
+ARXIV_ID_RE = re.compile(r"^(?:\d{4}\.\d{4,5}|[a-z-]+(?:\.[A-Z]{2})?/\d{7})(?:v\d+)?$", re.IGNORECASE)
+SOURCE_FINGERPRINT_LENGTH = 12
 
 
 class FullTextSourceKind(StrEnum):
@@ -63,6 +69,13 @@ class PdfParseCandidate(StrictSchemaModel):
     parser_backend: ParserBackend
     parser_version: str | None = None
 
+    @model_validator(mode="after")
+    def route_is_local_parseable(self) -> Self:
+        if not self.route.is_legal or self.route.requires_credentials:
+            msg = "PDF parse candidates must use legal credential-free routes"
+            raise ValueError(msg)
+        return self
+
 
 class ParserEvaluation(StrictSchemaModel):
     backend: ParserBackend
@@ -73,6 +86,20 @@ class ParserEvaluation(StrictSchemaModel):
     requires_credentials: bool = False
     terms_review_required: bool = False
     recommendation: str = Field(min_length=1)
+
+
+class ParsedDocument(StrictSchemaModel):
+    candidate: PdfParseCandidate
+    markdown: str = Field(min_length=1)
+    source_locator: str = Field(min_length=1)
+    page_count: int | None = Field(default=None, ge=1)
+    warnings: tuple[str, ...] = Field(default_factory=tuple)
+
+
+class PdfParserAdapter(Protocol):
+    backend: ParserBackend
+
+    def parse(self, candidate: PdfParseCandidate) -> ParsedDocument: ...
 
 
 class TextChunk(StrictSchemaModel):
@@ -111,6 +138,22 @@ class VectorStoreRecord(StrictSchemaModel):
             raise ValueError(msg)
         return self
 
+    def to_lancedb_record(self) -> dict[str, object]:
+        return {
+            "id": self.chunk.chunk_id,
+            "chunk_id": self.chunk.chunk_id,
+            "work_id": self.chunk.work_id,
+            "text": self.chunk.text,
+            "source_locator": self.chunk.source_locator,
+            "section_path": list(self.chunk.section_path),
+            "start_char": self.chunk.start_char,
+            "end_char": self.chunk.end_char,
+            "vector": list(self.embedding.vector),
+            "embedding_model": self.embedding.model_name,
+            "embedding_backend": self.embedding.backend.value,
+            "vector_backend": self.backend.value,
+        }
+
 
 class GroundedExtraction(StrictSchemaModel):
     extraction_id: str = Field(min_length=1)
@@ -118,12 +161,20 @@ class GroundedExtraction(StrictSchemaModel):
     claim_text: str = Field(min_length=1)
     evidence_set: EvidenceSet
     extraction_backend: str = Field(min_length=1)
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
 
     @model_validator(mode="after")
     def claim_matches_evidence(self) -> Self:
         if self.evidence_set.claim_text != self.claim_text:
             msg = "evidence_set claim_text must match extraction claim_text"
             raise ValueError(msg)
+        for item in self.evidence_set.items:
+            if item.quote is None or item.quote.strip() == "":
+                msg = "grounded extraction evidence items must include concrete chunk quotes"
+                raise ValueError(msg)
+            if not item.evidence_id.startswith(f"{self.work_id}:source:"):
+                msg = "grounded extraction evidence chunk IDs must match extraction work_id"
+                raise ValueError(msg)
         return self
 
 
@@ -144,7 +195,7 @@ def route_unpaywall_full_text(payload: Mapping[str, object], *, work_id: str | N
     location = _mapping(payload.get("best_oa_location"))
     if location is None:
         return None
-    url = _text(location.get("url_for_pdf")) or _text(location.get("url"))
+    url = _legal_pdf_url(_text(location.get("url_for_pdf")))
     if url is None:
         return None
     normalized_doi = _required_doi(doi)
@@ -218,7 +269,7 @@ def chunk_markdown(
             chunk_number = len(chunks) + 1
             chunks.append(
                 TextChunk(
-                    chunk_id=f"{work_id}:chunk:{chunk_number}",
+                    chunk_id=f"{work_id}:source:{_source_fingerprint(source_locator)}:chunk:{chunk_number}",
                     work_id=work_id,
                     text=piece,
                     source_locator=f"{source_locator}#chunk={chunk_number}",
@@ -259,16 +310,18 @@ def build_evidence_set(
     if missing:
         msg = f"supporting chunks not present: {missing}"
         raise ValueError(msg)
+    if len(set(supporting_chunk_ids)) != len(supporting_chunk_ids):
+        msg = "supporting_chunk_ids must be unique"
+        raise ValueError(msg)
     items = tuple(
         EvidenceItem(
-            evidence_id=chunk.chunk_id,
+            evidence_id=chunk_by_id[chunk_id].chunk_id,
             source_provider=provider,
-            source_locator=chunk.source_locator,
-            quote=chunk.text,
-            context_text=" > ".join(chunk.section_path) or None,
+            source_locator=chunk_by_id[chunk_id].source_locator,
+            quote=chunk_by_id[chunk_id].text,
+            context_text=" > ".join(chunk_by_id[chunk_id].section_path) or None,
         )
-        for chunk in chunks
-        if chunk.chunk_id in supporting_chunk_ids
+        for chunk_id in supporting_chunk_ids
     )
     return EvidenceSet(
         evidence_set_id=evidence_set_id,
@@ -291,7 +344,7 @@ def _route_arxiv(payload: Mapping[str, object]) -> FullTextRoute:
     if identifier is None:
         msg = "arXiv payload must include id"
         raise ValueError(msg)
-    arxiv_id = identifier.removeprefix(ARXIV_ABS_PREFIX)
+    arxiv_id = _normalize_arxiv_id(identifier)
     return FullTextRoute(
         route_id=f"arxiv:{arxiv_id}",
         work_id=f"arxiv:{arxiv_id}",
@@ -322,9 +375,13 @@ def _route_rxiv(provider: ProviderName, payload: Mapping[str, object]) -> FullTe
     if doi is None:
         msg = f"{provider.value} collection item must include doi"
         raise ValueError(msg)
+    server = "biorxiv" if provider is ProviderName.BIORXIV else "medrxiv"
+    payload_server = _text(first.get("server"))
+    if payload_server is not None and payload_server.casefold() != server:
+        msg = f"{provider.value} payload server must be {server}"
+        raise ValueError(msg)
     normalized_doi = _required_doi(doi)
     source_kind = FullTextSourceKind.BIORXIV if provider is ProviderName.BIORXIV else FullTextSourceKind.MEDRXIV
-    server = "biorxiv" if provider is ProviderName.BIORXIV else "medrxiv"
     return FullTextRoute(
         route_id=f"{provider.value}:{normalized_doi}",
         work_id=f"doi:{normalized_doi}",
@@ -363,6 +420,7 @@ def _text(value: object) -> str | None:
 def _split_markdown_sections(markdown: str) -> tuple[tuple[tuple[str, ...], str], ...]:
     current_path: tuple[str, ...] = ("Document",)
     buffer: list[str] = []
+    heading_stack: list[str] = []
     sections: list[tuple[tuple[str, ...], str]] = []
     for line in markdown.splitlines():
         heading = re.match(r"^(#{1,6})\s+(.+)$", line)
@@ -370,7 +428,10 @@ def _split_markdown_sections(markdown: str) -> tuple[tuple[tuple[str, ...], str]
             if buffer:
                 sections.append((current_path, "\n".join(buffer).strip()))
                 buffer = []
-            current_path = (heading.group(2).strip(),)
+            level = len(heading.group(1))
+            heading_stack = heading_stack[: level - 1]
+            heading_stack.append(heading.group(2).strip())
+            current_path = tuple(heading_stack)
             continue
         if line.strip():
             buffer.append(line)
@@ -392,7 +453,41 @@ def _split_text(text: str, *, max_chars: int) -> tuple[str, ...]:
             continue
         if buffer:
             chunks.append(buffer)
+        if len(sentence) > max_chars:
+            chunks.extend(_split_long_text(sentence, max_chars=max_chars))
+            buffer = ""
+            continue
         buffer = sentence
     if buffer:
         chunks.append(buffer)
     return tuple(chunks)
+
+
+def _split_long_text(text: str, *, max_chars: int) -> tuple[str, ...]:
+    return tuple(text[start : start + max_chars] for start in range(0, len(text), max_chars))
+
+
+def _legal_pdf_url(value: str | None) -> str | None:
+    if value is None:
+        return None
+    parsed = urlparse(value)
+    if parsed.scheme.lower() != LEGAL_FULL_TEXT_SCHEME or not parsed.netloc or not parsed.path.lower().endswith(".pdf"):
+        return None
+    return value
+
+
+def _normalize_arxiv_id(identifier: str) -> str:
+    parsed = urlparse(identifier)
+    if parsed.scheme:
+        if parsed.hostname != ARXIV_HOST or not parsed.path.startswith("/abs/"):
+            msg = "arXiv payload id must be a bare arXiv ID or arxiv.org abs URL"
+            raise ValueError(msg)
+        identifier = parsed.path.removeprefix("/abs/")
+    if not ARXIV_ID_RE.fullmatch(identifier):
+        msg = "arXiv payload id has an invalid format"
+        raise ValueError(msg)
+    return identifier
+
+
+def _source_fingerprint(source_locator: str) -> str:
+    return sha256(source_locator.encode("utf-8")).hexdigest()[:SOURCE_FINGERPRINT_LENGTH]

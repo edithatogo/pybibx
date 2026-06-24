@@ -4626,12 +4626,8 @@ quality = [
 ]
 rag = [
     { name = "docling" },
-    { name = "dspy" },
     { name = "fastembed" },
-    { name = "instructor" },
     { name = "lancedb" },
-    { name = "llama-index" },
-    { name = "pydantic-ai" },
 ]
 torch = [
     { name = "torch" },
@@ -4680,7 +4676,6 @@ requires-dist = [
     { name = "dspy", marker = "extra == 'ai'" },
     { name = "dspy", marker = "extra == 'all'" },
     { name = "dspy", marker = "extra == 'modern'" },
-    { name = "dspy", marker = "extra == 'rag'" },
     { name = "fastembed", marker = "extra == 'all'" },
     { name = "fastembed", marker = "extra == 'modern'" },
     { name = "fastembed", marker = "extra == 'rag'" },
@@ -4699,7 +4694,6 @@ requires-dist = [
     { name = "instructor", marker = "extra == 'ai'" },
     { name = "instructor", marker = "extra == 'all'" },
     { name = "instructor", marker = "extra == 'modern'" },
-    { name = "instructor", marker = "extra == 'rag'" },
     { name = "jiter" },
     { name = "jiter", marker = "extra == 'all'" },
     { name = "jiter", marker = "extra == 'modern'" },
@@ -4715,7 +4709,6 @@ requires-dist = [
     { name = "llama-index", marker = "extra == 'ai'" },
     { name = "llama-index", marker = "extra == 'all'" },
     { name = "llama-index", marker = "extra == 'modern'" },
-    { name = "llama-index", marker = "extra == 'rag'" },
     { name = "llmx", marker = "extra == 'ai'" },
     { name = "llmx", marker = "extra == 'all'" },
     { name = "llmx", marker = "extra == 'legacy'" },
@@ -4757,7 +4750,6 @@ requires-dist = [
     { name = "pydantic-ai", marker = "extra == 'ai'" },
     { name = "pydantic-ai", marker = "extra == 'all'" },
     { name = "pydantic-ai", marker = "extra == 'modern'" },
-    { name = "pydantic-ai", marker = "extra == 'rag'" },
     { name = "pydantic-settings" },
     { name = "pydantic-settings", marker = "extra == 'all'" },
     { name = "pydantic-settings", marker = "extra == 'modern'" },
@@ -4794,7 +4786,7 @@ requires-dist = [
     { name = "wordcloud", marker = "extra == 'legacy'" },
     { name = "wordcloud", marker = "extra == 'viz'" },
 ]
-provides-extras = ["web", "viz", "nlp", "ai", "torch", "schema", "data", "quality", "graph", "rag", "reports", "ui", "observability", "legacy", "modern", "all"]
+provides-extras = ["web", "viz", "nlp", "ai", "torch", "schema", "data", "quality", "graph", "rag", "rag-pdfmux", "reports", "ui", "observability", "legacy", "modern", "all"]
 
 [package.metadata.requires-dev]
 dev = [

@@ -7,4 +7,5 @@ This track adds the maintained full-text RAG foundation outside the legacy runti
 - [Spec](./spec.md)
 - [Plan](./plan.md)
 - [Verification](./verification.md)
-
+- [Review](./review.md)
+- [Metadata](./metadata.json)
