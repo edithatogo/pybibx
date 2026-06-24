@@ -18,8 +18,8 @@ Reviewed at `2026-06-24T03:20:11Z`.
 - Fixed weak test proof: tests now spy on `jiter.from_json`, assert compatibility metadata across JSON/CSV/TSV/BibTeX outputs, cover RIS, and cover unsupported text inference.
 - Fixed missing review evidence by adding this review file and linking it from `index.md`.
 - Fixed stale and thin verification evidence by refreshing `verification.md` with explicit per-phase checkpoints and current local validation.
-- Active registry state is intentionally left for the archive commit after this verification commit passes GitHub Actions.
+- Fixed active registry state by moving the track to `conductor/archive/polars_jiter_ingestion_20260624` after the verification commit passed GitHub Actions and removing the active `conductor/tracks.md` entry.
 
 ## Result
 
-The Polars/Jiter ingestion track is implemented, reviewed, and ready for a verification commit. After that commit passes GitHub Actions, archive the track by moving it to `conductor/archive/polars_jiter_ingestion_20260624` and removing the active `conductor/tracks.md` entry.
+The Polars/Jiter ingestion track is implemented, reviewed, CI-verified, and archived.

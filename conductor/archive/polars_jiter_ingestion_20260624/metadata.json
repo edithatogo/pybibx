@@ -3,6 +3,6 @@
   "type": "feature",
   "status": "completed",
   "created_at": "2026-06-23T17:42:20Z",
-  "updated_at": "2026-06-24T03:20:11Z",
+  "updated_at": "2026-06-24T03:23:21Z",
   "description": "Add Polars and Jiter ingestion helpers that normalize provider fixtures without touching the legacy pandas runtime."
 }
