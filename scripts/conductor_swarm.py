@@ -22,7 +22,10 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 TRACK_ID = "provider_ontology_foundation_20260614"
-TRACK_PLAN = REPO / "conductor" / "tracks" / TRACK_ID / "plan.md"
+TRACK_PLAN_CANDIDATES = (
+    REPO / "conductor" / "tracks" / TRACK_ID / "plan.md",
+    REPO / "conductor" / "archive" / TRACK_ID / "plan.md",
+)
 DEFAULT_CONFIG = REPO / "conductor" / "swarm_assignments.json"
 DEFAULT_EVIDENCE_DIR = REPO / "conductor" / "swarm_runs"
 CODEX_BIN = "/Applications/Codex.app/Contents/Resources/codex"
@@ -132,15 +135,24 @@ def cline_provider_check() -> Check:
     return Check("cline_provider", "blocked", f"{CLINE_PROVIDER}/{CLINE_MODEL} not present in redacted config")
 
 
+def track_plan_path() -> Path | None:
+    for path in TRACK_PLAN_CANDIDATES:
+        if path.exists():
+            return path
+    return None
+
+
 def track_check() -> Check:
-    if not TRACK_PLAN.exists():
-        return Check("track_plan", "blocked", f"missing {TRACK_PLAN.relative_to(REPO)}")
-    text = TRACK_PLAN.read_text()
+    track_plan = track_plan_path()
+    if track_plan is None:
+        candidates = ", ".join(str(path.relative_to(REPO)) for path in TRACK_PLAN_CANDIDATES)
+        return Check("track_plan", "blocked", f"missing one of: {candidates}")
+    text = track_plan.read_text()
     required = [CODEX_MODEL, CLINE_MODEL, "Codex swarm"]
     missing = [term for term in required if term not in text]
     if missing:
         return Check("track_plan", "blocked", f"missing terms: {', '.join(missing)}")
-    return Check("track_plan", "ok", str(TRACK_PLAN.relative_to(REPO)))
+    return Check("track_plan", "ok", str(track_plan.relative_to(REPO)))
 
 
 def redact(value: object) -> object:
@@ -295,7 +307,7 @@ def write_evidence(path: Path, payload: dict[str, object]) -> None:
 def prompt_for(lane: str, phase: str) -> str:
     common = (
         f"Repository: {REPO}\n"
-        f"Track: conductor/tracks/{TRACK_ID}/plan.md\n"
+        f"Track: {track_plan_path().relative_to(REPO) if track_plan_path() is not None else TRACK_ID}\n"
         f"Phase/task: {phase}\n\n"
         "You are not alone in the codebase. Do not revert changes made by others. "
         "Work only on the assigned scope. Report changed files, checks run, and blockers.\n"

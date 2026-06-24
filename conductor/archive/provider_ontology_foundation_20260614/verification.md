@@ -38,8 +38,10 @@ Verified at `2026-06-24T02:42:35Z`.
 
 ## Remote Verification
 
-- Latest checked remote quality run before this verification: `28071057799`, passed on `main`.
-- A post-commit quality run must pass before archive.
+- Verification checkpoint commit `7018cf24bca183fa027b334cbc980f49af402c2d`: GitHub Actions `quality` passed.
+- Run ID: `28071562542`.
+- URL: `https://github.com/edithatogo/pybibx/actions/runs/28071562542`.
+- Archive commit requires its own post-push quality run before final closeout.
 
 ## Known Boundaries
 

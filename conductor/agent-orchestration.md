@@ -29,7 +29,7 @@ This file defines how PyBibX Conductor tracks should be orchestrated across Code
   -m gpt-5.5 \
   --sandbox workspace-write \
   --ask-for-approval never \
-  "Implement the next bounded task from conductor/tracks/provider_ontology_foundation_20260614/plan.md. Preserve unrelated changes."
+  "Implement the next bounded task from a current Conductor track plan. Preserve unrelated changes."
 ```
 
 ### Cline Worker Lane

@@ -16,8 +16,8 @@ Reviewed at `2026-06-24T02:42:35Z`.
 - Finding: `metadata.json` had an old completion timestamp.
   - Fix: updated `updated_at` to the current verification timestamp.
 - Finding: archive would break `scripts/conductor_swarm.py` while it still points at `conductor/tracks/provider_ontology_foundation_20260614/plan.md`.
-  - Fix plan: commit verification first, pass CI, then archive with reference updates so the launcher resolves the archived plan.
+  - Fix: `scripts/conductor_swarm.py` now resolves the foundation plan from either `conductor/tracks/` or `conductor/archive/`, and the orchestration example no longer hard-codes the active provider foundation track path.
 
 ## Review Result
 
-No implementation blockers remain for this planning/orchestration foundation track. Later concrete implementation surfaces exist in the schema, provider, ingestion, graph, RAG, AI, quality, and reports modules/tracks. Optional/live external integrations remain intentionally gated or deferred.
+No implementation blockers remain for this planning/orchestration foundation track. Later concrete implementation surfaces exist in the schema, provider, ingestion, graph, RAG, AI, quality, and reports modules/tracks. Optional/live external integrations remain intentionally gated or deferred. The track is ready for archive after local and remote quality gates pass.
