@@ -29,7 +29,8 @@ Local verification refreshed on 2026-06-24.
 - `conductor_swarm.py plan --json`: active fallback is Codex swarm because Cline remains blocked by non-TTY configuration.
 - `git diff --check`: no whitespace errors.
 - `vale conductor README.md`: 0 errors, 0 warnings; existing project-spelling suggestions only.
-- GitHub Actions `quality`: pending for this closeout commit until pushed.
+- GitHub Actions `quality`: passed on pushed commit `a17e89a65804f7e553c6e23c9caa852ed86b8870`.
+  Run: https://github.com/edithatogo/pybibx/actions/runs/28074118757
 
 ## Scope Notes
 
@@ -46,4 +47,4 @@ Local verification refreshed on 2026-06-24.
 - Expected docs: track index, review, and verification are updated with acceptance evidence.
 - Unrelated files: none intentionally changed.
 - Acceptance: all spec bullets are mapped in `review.md` and covered by local gates.
-- Blockers: Cline/DeepSeek remains blocked by non-TTY config, so Codex subagents were used; GitHub Actions evidence remains pending until push.
+- Blockers: Cline/DeepSeek remains blocked by non-TTY config, so Codex subagents were used; no repository-local blocker remains.
