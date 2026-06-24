@@ -393,8 +393,8 @@ def ingest_provider_file(
 
     if resolved_format is InputFormat.JSON:
         works = _json_work(spec, resolved_format, _as_mapping(load_json_payload(path)))
-    elif resolved_format is InputFormat.CSV:
-        separator = "\t" if provider is ProviderName.WEB_OF_SCIENCE else ","
+    elif resolved_format in {InputFormat.CSV, InputFormat.TSV}:
+        separator = "\t" if resolved_format is InputFormat.TSV else ","
         works = _tabular_works(spec, resolved_format, path, separator=separator)
     elif resolved_format is InputFormat.BIBTEX:
         works = _bibtex_work(spec, resolved_format, path)
@@ -420,7 +420,7 @@ def _infer_input_format(path: Path) -> InputFormat:
     if suffix == ".csv":
         return InputFormat.CSV
     if suffix in {".txt", ".tsv"}:
-        return InputFormat.CSV
+        return InputFormat.TSV
     if suffix == ".bib":
         return InputFormat.BIBTEX
     msg = f"cannot infer input format for {path}"

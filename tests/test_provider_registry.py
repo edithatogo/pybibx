@@ -53,6 +53,27 @@ def test_registry_contains_requested_providers() -> None:
         )
         == "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     )
+    assert (
+        DEFAULT_PROVIDER_REGISTRY.get(ProviderName.OPENCITATIONS).endpoint_url("index")
+        == "https://api.opencitations.net/index/v2"
+    )
+
+
+def test_endpoint_response_formats_are_provider_native() -> None:
+    endpoint_formats = {
+        (spec.provider, endpoint.name): endpoint.response_format
+        for spec in DEFAULT_PROVIDER_REGISTRY.specs
+        for endpoint in spec.endpoints
+    }
+
+    assert endpoint_formats[(ProviderName.OPENALEX, "works")] is InputFormat.JSON
+    assert endpoint_formats[(ProviderName.CROSSREF, "works")] is InputFormat.JSON
+    assert endpoint_formats[(ProviderName.PUBMED, "fetch")] is InputFormat.XML
+    assert endpoint_formats[(ProviderName.OPENCITATIONS, "index")] is InputFormat.JSON
+    assert endpoint_formats[(ProviderName.ARXIV, "query")] is InputFormat.XML
+    assert all(
+        endpoint.output_format is None for spec in DEFAULT_PROVIDER_REGISTRY.specs for endpoint in spec.endpoints
+    )
 
 
 def test_access_modes_preserve_legal_and_credential_boundaries() -> None:
@@ -89,6 +110,9 @@ def test_all_registry_fixtures_exist_and_json_fixtures_parse() -> None:
         assert path.exists(), path
         if path.suffix == ".json":
             assert json.loads(path.read_text(encoding="utf-8"))
+        if path.name == "web_of_science_export.txt":
+            web_of_science = DEFAULT_PROVIDER_REGISTRY.get(ProviderName.WEB_OF_SCIENCE)
+            assert web_of_science.fixtures[0].input_format is InputFormat.TSV
 
 
 def test_registry_integrates_with_default_settings() -> None:
@@ -97,9 +121,13 @@ def test_registry_integrates_with_default_settings() -> None:
     for spec in DEFAULT_PROVIDER_REGISTRY.specs:
         provider_settings = settings.provider_settings(spec.provider)
         assert provider_settings is not None, spec.provider
+        assert provider_settings.credential_required is spec.credential_required
+        assert provider_settings.rate_limit_per_second == spec.rate_limit_per_second
         if spec.access_mode is ProviderAccessMode.CREDENTIAL_GATED:
             assert provider_settings.credential_required is True
             assert provider_settings.enabled is False
+        else:
+            assert provider_settings.enabled is True
 
 
 def test_provider_spec_rejects_invalid_boundaries() -> None:

@@ -56,9 +56,10 @@ def test_scopus_and_web_of_science_exports_use_polars_lazy_scan() -> None:
     web_of_science = ingest_provider_file(
         FIXTURES / "web_of_science_export.txt",
         provider=ProviderName.WEB_OF_SCIENCE,
-        input_format=InputFormat.CSV,
     )
 
+    assert scopus.input_format is InputFormat.CSV
+    assert web_of_science.input_format is InputFormat.TSV
     assert scopus.works[0].title == "Scopus Export Fixture"
     assert scopus.works[0].doi == "10.1234/scopus.fixture"
     assert web_of_science.works[0].title == "Web of Science Export Fixture"

@@ -25,6 +25,7 @@ class InputFormat(StrEnum):
     JSON = "json"
     JSONL = "jsonl"
     CSV = "csv"
+    TSV = "tsv"
     BIBTEX = "bibtex"
     RIS = "ris"
     CSL_JSON = "csl-json"

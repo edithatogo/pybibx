@@ -92,7 +92,7 @@ class PyBibXSettings(BaseSettings):
             ProviderSettings(provider=ProviderName.OPENCITATIONS, rate_limit_per_second=2.0),
             ProviderSettings(provider=ProviderName.SEMANTIC_SCHOLAR, rate_limit_per_second=1.0),
             ProviderSettings(provider=ProviderName.ROR, rate_limit_per_second=2.0),
-            ProviderSettings(provider=ProviderName.ORCID, enabled=False, credential_required=True),
+            ProviderSettings(provider=ProviderName.ORCID, rate_limit_per_second=1.0),
             ProviderSettings(provider=ProviderName.UNPAYWALL, rate_limit_per_second=2.0),
             ProviderSettings(provider=ProviderName.ARXIV, rate_limit_per_second=0.33),
             ProviderSettings(provider=ProviderName.BIORXIV, rate_limit_per_second=1.0),
