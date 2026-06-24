@@ -202,6 +202,15 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
 
+[tool.ty.environment]
+python-version = "3.14"
+
+[tool.ty.src]
+exclude = ["pybibx/base"]
+
+[tool.ty.rules]
+all = "error"
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-ra --strict-config --strict-markers"

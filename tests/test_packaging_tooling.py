@@ -61,6 +61,9 @@ def test_quality_tool_configs_are_present_and_scoped() -> None:
     renovate = json.loads((REPO / "renovate.json").read_text(encoding="utf-8"))
 
     assert pyproject["tool"]["ruff"]["target-version"] == "py314"  # type: ignore[index]
+    assert pyproject["tool"]["ty"]["environment"]["python-version"] == "3.14"  # type: ignore[index]
+    assert pyproject["tool"]["ty"]["src"]["exclude"] == ["pybibx/base"]  # type: ignore[index]
+    assert pyproject["tool"]["ty"]["rules"]["all"] == "error"  # type: ignore[index]
     assert pyproject["tool"]["pytest"]["ini_options"]["testpaths"] == ["tests"]  # type: ignore[index]
     assert pyright["typeCheckingMode"] == "strict"
     assert pyright["include"] == ["pybibx"]
