@@ -4,5 +4,6 @@ This track adds the maintained report/export foundation for citation-safe report
 
 - [Specification](./spec.md)
 - [Implementation Plan](./plan.md)
+- [Review](./review.md)
 - [Verification](./verification.md)
 - [Metadata](./metadata.json)

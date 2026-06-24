@@ -1,18 +1,34 @@
 # Verification
 
-Local verification completed on 2026-06-23 UTC:
+Local verification refreshed on 2026-06-24:
 
 - `uv lock --check`: passed
-- `uv run --group dev pytest tests -q`: 69 passed
+- `uv run --group dev pytest tests/test_ui_reports.py tests/test_packaging_tooling.py -q`: 11 passed
+- `uv run --group dev pytest tests -q`: 92 passed
 - `uv run --group dev ruff check pybibx setup.py tests`: passed
-- `uv run --group dev ruff format --check pybibx setup.py tests`: passed
+- `uv run --group dev ruff format --check pybibx setup.py tests`: 32 files already formatted
 - `uv run --group dev pyright`: 0 errors, 0 warnings, 0 informations
 - `uv run --group dev ty check pybibx/__init__.py`: passed
-- `python scripts/check_conductor_swarm.py`: passed
+- `python scripts/check_conductor_swarm.py`: conductor swarm smoke ok
+- `python scripts/conductor_swarm.py validate-config --json`: status ok
+- `python scripts/conductor_swarm.py plan --json`: active fallback is Codex swarm because Cline remains blocked by non-TTY configuration
 - `git diff --check`: passed
+- `vale conductor README.md`: 0 errors, 0 warnings; existing project-spelling suggestions only
 
 Remote verification:
 
-- GitHub Actions `quality` for commit `4757000d5eb6f053f37681b94ec45bf262dab7ad`: passed
-- Run ID: `28047783873`
-- URL: `https://github.com/edithatogo/pybibx/actions/runs/28047783873`
+- GitHub Actions `quality`: pending for this closeout commit until pushed.
+
+## Scope Notes
+
+- Added maintained report/export contracts for citation-safe reports, BibLib-style Markdown notes, CSL-JSON export, and optional UI planning.
+- Tightened report reference validation, citation evidence-chain validation, manifest evidence matching, and BibLib note collision handling during review.
+- Did not add a live Reflex app, browser Cosmograph renderer, hosted PapersFlow API calls, or legacy Flask app changes.
+
+## Manual Checkpoint
+
+- Expected code paths: `pybibx/reports/exports.py`, `tests/test_ui_reports.py`, and packaging metadata/tests.
+- Expected docs: track index, review, and verification are updated with acceptance evidence.
+- Unrelated files: none intentionally changed.
+- Acceptance: all spec bullets are mapped in `review.md` and covered by local gates; remote CI remains required before archive.
+- Blockers: Cline/DeepSeek remains blocked by non-TTY config, so Codex subagents were used; GitHub Actions evidence remains pending until push.

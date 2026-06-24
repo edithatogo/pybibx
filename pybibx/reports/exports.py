@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Annotated, Any, Self
 
 from pydantic import Field, model_validator
 
@@ -12,21 +12,38 @@ CITATION_SAFE_MARKDOWN_PROFILE = "citation-safe-markdown"
 BIBLIB_MARKDOWN_PROFILE = "biblib-markdown"
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Iterable, Sequence
 
 
 class ReportClaim(StrictSchemaModel):
     claim_id: str = Field(min_length=1)
     text: str = Field(min_length=1)
-    evidence_set_ids: tuple[str, ...] = Field(min_length=1)
-    citation_ids: tuple[str, ...] = Field(default_factory=tuple)
+    evidence_set_ids: tuple[Annotated[str, Field(min_length=1)], ...] = Field(min_length=1)
+    citation_ids: tuple[Annotated[str, Field(min_length=1)], ...] = Field(default_factory=tuple)
     confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+
+    @model_validator(mode="after")
+    def references_are_unique(self) -> Self:
+        if len(set(self.evidence_set_ids)) != len(self.evidence_set_ids):
+            msg = "report claim evidence_set_ids must be unique"
+            raise ValueError(msg)
+        if len(set(self.citation_ids)) != len(self.citation_ids):
+            msg = "report claim citation_ids must be unique"
+            raise ValueError(msg)
+        return self
 
 
 class ReportSection(StrictSchemaModel):
     heading: str = Field(min_length=1)
-    claim_ids: tuple[str, ...] = Field(default_factory=tuple)
+    claim_ids: tuple[Annotated[str, Field(min_length=1)], ...] = Field(default_factory=tuple)
     body: str | None = None
+
+    @model_validator(mode="after")
+    def claim_ids_are_unique(self) -> Self:
+        if len(set(self.claim_ids)) != len(self.claim_ids):
+            msg = "report section claim_ids must be unique"
+            raise ValueError(msg)
+        return self
 
 
 class CitationSafeReportContent(StrictSchemaModel):
@@ -50,7 +67,12 @@ class CitationSafeReport(StrictSchemaModel):
 
     @model_validator(mode="after")
     def validate_report_links(self) -> Self:
+        _raise_if_duplicate("report works", (item.work_id for item in self.works))
+        _raise_if_duplicate("report evidence sets", (item.evidence_set_id for item in self.evidence_sets))
+        _raise_if_duplicate("report citations", (_citation_key(item) for item in self.citations))
+        _raise_if_duplicate("report claims", (item.claim_id for item in self.claims))
         evidence_set_ids = {item.evidence_set_id for item in self.evidence_sets}
+        evidence_item_ids = {item.evidence_id for evidence_set in self.evidence_sets for item in evidence_set.items}
         citation_ids = {_citation_key(item) for item in self.citations}
         claim_ids = {item.claim_id for item in self.claims}
         unknown_evidence = sorted(
@@ -71,6 +93,15 @@ class CitationSafeReport(StrictSchemaModel):
         if unknown_citations:
             msg = f"report claims reference unknown citations: {unknown_citations}"
             raise ValueError(msg)
+        unknown_citation_evidence = sorted(
+            evidence_id
+            for citation in self.citations
+            for evidence_id in citation.evidence_ids
+            if evidence_id not in evidence_item_ids
+        )
+        if unknown_citation_evidence:
+            msg = f"report citations reference unknown evidence items: {unknown_citation_evidence}"
+            raise ValueError(msg)
         unknown_claims = sorted(
             claim_id for section in self.sections for claim_id in section.claim_ids if claim_id not in claim_ids
         )
@@ -79,6 +110,9 @@ class CitationSafeReport(StrictSchemaModel):
             raise ValueError(msg)
         if self.manifest.record_count != len(self.claims):
             msg = "report manifest record_count must match claim count"
+            raise ValueError(msg)
+        if set(self.manifest.evidence_set_ids) != evidence_set_ids:
+            msg = "report manifest evidence_set_ids must match report evidence sets"
             raise ValueError(msg)
         return self
 
@@ -176,10 +210,13 @@ def export_csl_json(works: Sequence[Work]) -> list[dict[str, Any]]:
 
 def build_biblib_markdown_notes(works: Sequence[Work]) -> MarkdownNoteBundle:
     notes = {f"{_safe_note_name(work.work_id)}.md": _work_to_biblib_markdown(work) for work in works}
+    if len(notes) != len(works):
+        msg = "BibLib Markdown note filenames must be unique"
+        raise ValueError(msg)
     manifest = ExportManifest(
         export_id="biblib-markdown",
-        export_profile=ExportProfile.CSL_BIBLIOGRAPHY,
-        output_format=OutputFormat.CSL_JSON,
+        export_profile=ExportProfile.BIBLIB_MARKDOWN,
+        output_format=OutputFormat.MARKDOWN,
         record_count=len(notes),
     )
     return MarkdownNoteBundle(notes=notes, manifest=manifest)
@@ -258,3 +295,15 @@ def _citation_key(citation: Citation) -> str:
 
 def _safe_note_name(value: str) -> str:
     return value.replace("/", "_").replace(":", "_")
+
+
+def _raise_if_duplicate(label: str, values: Iterable[str]) -> None:
+    seen: set[str] = set()
+    duplicates: set[str] = set()
+    for value in values:
+        if value in seen:
+            duplicates.add(value)
+        seen.add(value)
+    if duplicates:
+        msg = f"{label} must be unique: {sorted(duplicates)}"
+        raise ValueError(msg)
