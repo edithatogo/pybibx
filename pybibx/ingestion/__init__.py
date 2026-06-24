@@ -3,6 +3,7 @@ from pybibx.ingestion.parsers import (
     IngestionResult,
     ingest_provider_file,
     load_json_payload,
+    scan_jsonl,
     scan_tabular,
 )
 
@@ -11,5 +12,6 @@ __all__ = [
     "IngestionResult",
     "ingest_provider_file",
     "load_json_payload",
+    "scan_jsonl",
     "scan_tabular",
 ]

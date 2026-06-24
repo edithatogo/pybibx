@@ -51,6 +51,10 @@ def load_json_payload(path: Path) -> object:
     return jiter.from_json(path.read_bytes())
 
 
+def scan_jsonl(path: Path) -> pl.LazyFrame:
+    return pl.scan_ndjson(path)
+
+
 def scan_tabular(path: Path, *, separator: str = ",") -> pl.LazyFrame:
     return pl.scan_csv(path, separator=separator)
 
@@ -308,6 +312,17 @@ def _json_work(spec: ProviderSpec, input_format: InputFormat, payload: dict[str,
     return normalizer(spec, input_format, payload)
 
 
+def _jsonl_works(spec: ProviderSpec, input_format: InputFormat, path: Path) -> tuple[Work, ...]:
+    normalizer = JSON_NORMALIZERS.get(spec.provider)
+    if normalizer is None:
+        msg = f"unsupported JSONL provider: {spec.provider}"
+        raise IngestionError(msg)
+    works: list[Work] = []
+    for row in scan_jsonl(path).collect().iter_rows(named=True):
+        works.extend(normalizer(spec, input_format, dict(row)))
+    return tuple(works)
+
+
 def _pubmed_record(payload: dict[str, Any]) -> dict[str, object]:
     if "result" in payload:
         result = _as_mapping(payload["result"])
@@ -351,28 +366,107 @@ def _tabular_works(
     return tuple(works)
 
 
-BIB_FIELD_RE = re.compile(r"^\s*(?P<key>[A-Za-z]+)\s*=\s*[{\"](?P<value>.*?)[}\"],?\s*$")
+BIB_ENTRY_RE = re.compile(r"@\w+\s*\{", re.IGNORECASE)
+BIB_FIELD_RE = re.compile(
+    r"(?P<key>[A-Za-z]+)\s*=\s*(?:\{(?P<brace>.*?)\}|\"(?P<quote>.*?)\")\s*,?",
+    re.DOTALL,
+)
+RIS_TAG_PREFIX_LENGTH = 6
+
+
+def _bibtex_entries(text: str) -> tuple[str, ...]:
+    entries: list[str] = []
+    for match in BIB_ENTRY_RE.finditer(text):
+        start = match.start()
+        depth = 0
+        for index, char in enumerate(text[start:], start=start):
+            if char == "{":
+                depth += 1
+            elif char == "}":
+                depth -= 1
+                if depth == 0:
+                    entries.append(text[start : index + 1])
+                    break
+    return tuple(entries)
+
+
+def _bibtex_fields(entry: str) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    for match in BIB_FIELD_RE.finditer(entry):
+        value = match.group("brace") if match.group("brace") is not None else match.group("quote")
+        fields[match.group("key").lower()] = value.replace("\n", " ").strip()
+    return fields
+
+
+def _work_from_reference_fields(
+    spec: ProviderSpec,
+    input_format: InputFormat,
+    fields: dict[str, str],
+    *,
+    fallback_title: str,
+) -> Work:
+    author = fields.get("author") or fields.get("au")
+    title = fields.get("title") or fields.get("ti") or fallback_title
+    doi = _doi(fields.get("doi") or fields.get("do"))
+    return _work(
+        spec,
+        input_format,
+        WorkDraft(
+            work_id=f"{spec.provider.value}:{doi or title}",
+            title=title,
+            doi=doi,
+            publication_year=_year(fields.get("year") or fields.get("py") or fields.get("y1")),
+            authors=(Author(display_name=author),) if author else (),
+        ),
+    )
 
 
 def _bibtex_work(spec: ProviderSpec, input_format: InputFormat, path: Path) -> tuple[Work, ...]:
-    fields: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        match = BIB_FIELD_RE.match(line)
-        if match:
-            fields[match.group("key").lower()] = match.group("value").strip()
-    author = fields.get("author")
-    return (
-        _work(
+    entries = _bibtex_entries(path.read_text(encoding="utf-8"))
+    if not entries:
+        msg = f"{path} does not contain BibTeX entries"
+        raise IngestionError(msg)
+    return tuple(
+        _work_from_reference_fields(
             spec,
             input_format,
-            WorkDraft(
-                work_id=f"{spec.provider.value}:{fields.get('doi', fields.get('title', 'unknown'))}",
-                title=fields.get("title", "Untitled BibTeX record"),
-                doi=_doi(fields.get("doi")),
-                publication_year=_year(fields.get("year")),
-                authors=(Author(display_name=author),) if author else (),
-            ),
-        ),
+            _bibtex_fields(entry),
+            fallback_title="Untitled BibTeX record",
+        )
+        for entry in entries
+    )
+
+
+def _ris_work(spec: ProviderSpec, input_format: InputFormat, path: Path) -> tuple[Work, ...]:
+    records: list[dict[str, str]] = []
+    current: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if len(line) < RIS_TAG_PREFIX_LENGTH or line[2:RIS_TAG_PREFIX_LENGTH] != "  - ":
+            continue
+        key = line[:2].lower()
+        value = line[RIS_TAG_PREFIX_LENGTH:].strip()
+        if key == "er":
+            if current:
+                records.append(current)
+                current = {}
+            continue
+        if key in current and value:
+            current[key] = f"{current[key]}; {value}"
+        elif value:
+            current[key] = value
+    if current:
+        records.append(current)
+    if not records:
+        msg = f"{path} does not contain RIS records"
+        raise IngestionError(msg)
+    return tuple(
+        _work_from_reference_fields(
+            spec,
+            input_format,
+            record,
+            fallback_title="Untitled RIS record",
+        )
+        for record in records
     )
 
 
@@ -383,7 +477,7 @@ def ingest_provider_file(
     input_format: InputFormat | None = None,
 ) -> IngestionResult:
     spec = DEFAULT_PROVIDER_REGISTRY.get(provider)
-    resolved_format = input_format or _infer_input_format(path)
+    resolved_format = input_format or _infer_input_format(path, provider=provider)
     if spec.access_mode is ProviderAccessMode.CREDENTIAL_GATED and resolved_format is InputFormat.JSON:
         msg = f"{provider.value} JSON/API ingestion requires configured credentials and a live adapter"
         raise IngestionError(msg)
@@ -393,11 +487,15 @@ def ingest_provider_file(
 
     if resolved_format is InputFormat.JSON:
         works = _json_work(spec, resolved_format, _as_mapping(load_json_payload(path)))
+    elif resolved_format is InputFormat.JSONL:
+        works = _jsonl_works(spec, resolved_format, path)
     elif resolved_format in {InputFormat.CSV, InputFormat.TSV}:
         separator = "\t" if resolved_format is InputFormat.TSV else ","
         works = _tabular_works(spec, resolved_format, path, separator=separator)
     elif resolved_format is InputFormat.BIBTEX:
         works = _bibtex_work(spec, resolved_format, path)
+    elif resolved_format is InputFormat.RIS:
+        works = _ris_work(spec, resolved_format, path)
     else:
         msg = f"unsupported local ingestion format: {resolved_format.value}"
         raise IngestionError(msg)
@@ -411,17 +509,26 @@ def ingest_provider_file(
     )
 
 
-def _infer_input_format(path: Path) -> InputFormat:
+def _looks_like_tab_export(path: Path) -> bool:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not lines:
+        return False
+    return "\t" in lines[0] and {"AU", "TI"}.issubset(set(lines[0].split("\t")))
+
+
+def _infer_input_format(path: Path, *, provider: ProviderName) -> InputFormat:
     suffix = path.suffix.lower()
-    if suffix == ".json":
-        return InputFormat.JSON
-    if suffix == ".jsonl":
-        return InputFormat.JSONL
-    if suffix == ".csv":
-        return InputFormat.CSV
-    if suffix in {".txt", ".tsv"}:
+    suffix_formats = {
+        ".json": InputFormat.JSON,
+        ".jsonl": InputFormat.JSONL,
+        ".csv": InputFormat.CSV,
+        ".tsv": InputFormat.TSV,
+        ".bib": InputFormat.BIBTEX,
+        ".ris": InputFormat.RIS,
+    }
+    if suffix in suffix_formats:
+        return suffix_formats[suffix]
+    if suffix == ".txt" and provider is ProviderName.WEB_OF_SCIENCE and _looks_like_tab_export(path):
         return InputFormat.TSV
-    if suffix == ".bib":
-        return InputFormat.BIBTEX
     msg = f"cannot infer input format for {path}"
     raise IngestionError(msg)
