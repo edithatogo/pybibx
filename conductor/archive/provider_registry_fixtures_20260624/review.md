@@ -18,8 +18,8 @@ Reviewed at `2026-06-24T03:07:46Z`.
 - Fixed OpenCitations API metadata: registry now uses `https://api.opencitations.net/index/v2`.
 - Fixed missing review evidence by adding this review file and linking it from `index.md`.
 - Fixed thin checkpoint evidence by refreshing `verification.md` with explicit per-phase checkpoints.
-- Active registry state is intentionally left for the archive commit after this verification commit passes GitHub Actions.
+- Fixed active registry state by moving the track to `conductor/archive/provider_registry_fixtures_20260624` after the verification commit passed GitHub Actions and removing the active `conductor/tracks.md` entry.
 
 ## Result
 
-The provider registry fixtures track is implemented, reviewed, and ready for a verification commit. After that commit passes GitHub Actions, archive the track by moving it to `conductor/archive/provider_registry_fixtures_20260624` and removing the active `conductor/tracks.md` entry.
+The provider registry fixtures track is implemented, reviewed, CI-verified, and archived.

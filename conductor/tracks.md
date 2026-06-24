@@ -4,11 +4,6 @@ This file tracks major tracks for the project. Each track has its own detailed p
 
 ---
 
-- [x] **Track: Provider Registry Fixtures**
-  *Link: [./tracks/provider_registry_fixtures_20260624/](./tracks/provider_registry_fixtures_20260624/)*
-
----
-
 - [x] **Track: Polars Jiter Ingestion**
   *Link: [./tracks/polars_jiter_ingestion_20260624/](./tracks/polars_jiter_ingestion_20260624/)*
 
