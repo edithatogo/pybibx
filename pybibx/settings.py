@@ -27,6 +27,7 @@ class RuntimeSettings(StrictSettingsModel):
     openai_compatible_base_url: str | None = None
     ollama_base_url: str = "http://localhost:11434/v1"
     mistral_rs_base_url: str | None = None
+    mistral_rs_metrics_url: str | None = None
     default_model: str = "local"
     request_timeout_seconds: float = Field(default=60.0, gt=0)
 

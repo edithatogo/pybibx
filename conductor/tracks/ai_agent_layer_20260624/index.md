@@ -6,5 +6,6 @@ This track adds the optional AI and agent orchestration layer for evidence-groun
 
 - [Spec](./spec.md)
 - [Plan](./plan.md)
+- [Review](./review.md)
 - [Verification](./verification.md)
-
+- [Metadata](./metadata.json)

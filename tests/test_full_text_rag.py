@@ -319,6 +319,17 @@ def test_pipeline_plan_keeps_only_legal_credential_free_routes() -> None:
     assert plan.vector_backend.value == "lancedb"
 
 
+def test_pipeline_plan_rejects_empty_evidence_routes() -> None:
+    open_route = route_unpaywall_full_text(_fixture("unpaywall.json"))
+    assert open_route is not None
+
+    with pytest.raises(ValidationError, match="at least one legal credential-free route"):
+        plan_local_rag_pipeline(())
+
+    with pytest.raises(ValidationError, match="at least one legal credential-free route"):
+        plan_local_rag_pipeline((open_route.model_copy(update={"requires_credentials": True}),))
+
+
 def test_rag_import_does_not_load_optional_or_legacy_runtime_dependencies() -> None:
     code = textwrap.dedent(
         """

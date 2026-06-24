@@ -57,6 +57,11 @@ nlp = [
   "umap-learn",
 ]
 ai = ["dspy", "google-generativeai", "instructor", "llama-index", "llmx", "openai", "pydantic-ai"]
+ai-pydantic = ["pydantic-ai"]
+ai-instructor = ["instructor", "openai"]
+ai-dspy = ["dspy"]
+ai-llama-index = ["llama-index"]
+ai-rag = ["fastembed", "lancedb", "llama-index"]
 torch = ["torch", "torchaudio", "torchvision"]
 schema = []
 data = []

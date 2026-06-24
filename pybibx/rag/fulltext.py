@@ -185,6 +185,13 @@ class RagPipelinePlan(StrictSchemaModel):
     vector_backend: VectorStoreBackend = VectorStoreBackend.LANCEDB
     evidence_required: bool = True
 
+    @model_validator(mode="after")
+    def evidence_requires_usable_routes(self) -> Self:
+        if self.evidence_required and not self.routes:
+            msg = "evidence-required RAG plans must include at least one legal credential-free route"
+            raise ValueError(msg)
+        return self
+
 
 def route_unpaywall_full_text(payload: Mapping[str, object], *, work_id: str | None = None) -> FullTextRoute | None:
     if payload.get("is_oa") is not True:

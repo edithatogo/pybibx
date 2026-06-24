@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import TYPE_CHECKING, Self
+from ipaddress import ip_address
+from typing import TYPE_CHECKING, Annotated, Self
+from urllib.parse import urlparse
 
 from pydantic import Field, model_validator
 
@@ -16,6 +18,7 @@ if TYPE_CHECKING:
 OLLAMA_MODEL_PREFIX = "ollama:"
 MISTRAL_RS_MODEL_PREFIX = "mistral-rs:"
 OPENAI_COMPATIBLE_MODEL_PREFIX = "openai-compatible:"
+LOCAL_RUNTIME_HOSTS = frozenset({"localhost"})
 
 
 class AgentFramework(StrEnum):
@@ -43,6 +46,9 @@ class LocalRuntime(StrictSchemaModel):
 
     @model_validator(mode="after")
     def metrics_match_runtime(self) -> Self:
+        if self.kind is LocalRuntimeKind.MISTRAL_RS and self.metrics_url is None:
+            msg = "mistral.rs runtimes must declare metrics_url"
+            raise ValueError(msg)
         if self.metrics_url is not None and self.kind is not LocalRuntimeKind.MISTRAL_RS:
             msg = "metrics_url is currently reserved for mistral.rs runtimes"
             raise ValueError(msg)
@@ -61,12 +67,15 @@ class InstructorExtractionSpec(StrictSchemaModel):
     response_model: str = Field(min_length=1)
     retry_on_validation_error: bool = True
     streaming_partial_objects: bool = False
-    evidence_set_ids: tuple[str, ...] = Field(default_factory=tuple)
+    evidence_set_ids: tuple[Annotated[str, Field(min_length=1)], ...] = Field(default_factory=tuple)
 
     @model_validator(mode="after")
     def evidence_is_explicit(self) -> Self:
         if not self.evidence_set_ids:
             msg = "Instructor extraction specs must declare evidence_set_ids"
+            raise ValueError(msg)
+        if len(set(self.evidence_set_ids)) != len(self.evidence_set_ids):
+            msg = "Instructor extraction evidence_set_ids must be unique"
             raise ValueError(msg)
         return self
 
@@ -117,6 +126,20 @@ class AgentOrchestrationPlan(StrictSchemaModel):
         if self.allow_hosted_llms and self.runtime.kind is not LocalRuntimeKind.OPENAI_COMPATIBLE:
             msg = "hosted LLM use must go through an explicit OpenAI-compatible runtime"
             raise ValueError(msg)
+        if (
+            not self.allow_hosted_llms
+            and self.runtime.kind is LocalRuntimeKind.OPENAI_COMPATIBLE
+            and _is_hosted_openai_compatible_base_url(self.runtime.base_url)
+        ):
+            msg = "hosted OpenAI-compatible runtimes require enable_hosted_llms"
+            raise ValueError(msg)
+        if not self.pydantic_ai.require_evidence:
+            msg = "PydanticAI orchestration must require evidence"
+            raise ValueError(msg)
+        expected_evidence_ids = {item.evidence_set_id for item in self.task.evidence_sets}
+        if set(self.instructor.evidence_set_ids) != expected_evidence_ids:
+            msg = "Instructor evidence_set_ids must match task evidence_sets"
+            raise ValueError(msg)
         return self
 
 
@@ -133,7 +156,7 @@ def build_local_runtime(settings: PyBibXSettings, *, kind: LocalRuntimeKind | No
             model=_strip_model_prefix(runtime.default_model, MISTRAL_RS_MODEL_PREFIX),
             request_timeout_seconds=runtime.request_timeout_seconds,
             supports_vision=True,
-            metrics_url=f"{runtime.mistral_rs_base_url.rstrip('/')}/metrics",
+            metrics_url=runtime.mistral_rs_metrics_url or _derive_mistral_rs_metrics_url(runtime.mistral_rs_base_url),
         )
     if selected is LocalRuntimeKind.OPENAI_COMPATIBLE:
         if runtime.openai_compatible_base_url is None:
@@ -234,3 +257,28 @@ def _default_runtime_kind(settings: PyBibXSettings) -> LocalRuntimeKind:
 def _strip_model_prefix(model: str, prefix: str) -> str:
     stripped = model.removeprefix(prefix)
     return stripped or "local"
+
+
+def _derive_mistral_rs_metrics_url(base_url: str) -> str:
+    parsed = urlparse(base_url)
+    if parsed.scheme and parsed.netloc:
+        return f"{parsed.scheme}://{parsed.netloc}/metrics"
+    return f"{base_url.rstrip('/')}/metrics"
+
+
+def _is_hosted_openai_compatible_base_url(base_url: str) -> bool:
+    hostname = urlparse(base_url).hostname
+    if hostname is None:
+        return False
+    return not _is_local_runtime_hostname(hostname)
+
+
+def _is_local_runtime_hostname(hostname: str) -> bool:
+    normalized = hostname.lower()
+    if normalized in LOCAL_RUNTIME_HOSTS or normalized.endswith(".local"):
+        return True
+    try:
+        parsed_ip = ip_address(normalized)
+    except ValueError:
+        return False
+    return parsed_ip.is_loopback or parsed_ip.is_private or parsed_ip.is_link_local

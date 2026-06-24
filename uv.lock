@@ -4515,6 +4515,24 @@ ai = [
     { name = "openai" },
     { name = "pydantic-ai" },
 ]
+ai-dspy = [
+    { name = "dspy" },
+]
+ai-instructor = [
+    { name = "instructor" },
+    { name = "openai" },
+]
+ai-llama-index = [
+    { name = "llama-index" },
+]
+ai-pydantic = [
+    { name = "pydantic-ai" },
+]
+ai-rag = [
+    { name = "fastembed" },
+    { name = "lancedb" },
+    { name = "llama-index" },
+]
 all = [
     { name = "bert-extractive-summarizer" },
     { name = "bertopic" },
@@ -4674,8 +4692,10 @@ requires-dist = [
     { name = "docling", marker = "extra == 'modern'" },
     { name = "docling", marker = "extra == 'rag'" },
     { name = "dspy", marker = "extra == 'ai'" },
+    { name = "dspy", marker = "extra == 'ai-dspy'" },
     { name = "dspy", marker = "extra == 'all'" },
     { name = "dspy", marker = "extra == 'modern'" },
+    { name = "fastembed", marker = "extra == 'ai-rag'" },
     { name = "fastembed", marker = "extra == 'all'" },
     { name = "fastembed", marker = "extra == 'modern'" },
     { name = "fastembed", marker = "extra == 'rag'" },
@@ -4692,6 +4712,7 @@ requires-dist = [
     { name = "great-expectations", marker = "extra == 'modern'" },
     { name = "great-expectations", marker = "extra == 'quality'" },
     { name = "instructor", marker = "extra == 'ai'" },
+    { name = "instructor", marker = "extra == 'ai-instructor'" },
     { name = "instructor", marker = "extra == 'all'" },
     { name = "instructor", marker = "extra == 'modern'" },
     { name = "jiter" },
@@ -4703,10 +4724,13 @@ requires-dist = [
     { name = "keybert", marker = "extra == 'all'" },
     { name = "keybert", marker = "extra == 'legacy'" },
     { name = "keybert", marker = "extra == 'nlp'" },
+    { name = "lancedb", marker = "extra == 'ai-rag'" },
     { name = "lancedb", marker = "extra == 'all'" },
     { name = "lancedb", marker = "extra == 'modern'" },
     { name = "lancedb", marker = "extra == 'rag'" },
     { name = "llama-index", marker = "extra == 'ai'" },
+    { name = "llama-index", marker = "extra == 'ai-llama-index'" },
+    { name = "llama-index", marker = "extra == 'ai-rag'" },
     { name = "llama-index", marker = "extra == 'all'" },
     { name = "llama-index", marker = "extra == 'modern'" },
     { name = "llmx", marker = "extra == 'ai'" },
@@ -4725,6 +4749,7 @@ requires-dist = [
     { name = "numba" },
     { name = "numpy" },
     { name = "openai", marker = "extra == 'ai'" },
+    { name = "openai", marker = "extra == 'ai-instructor'" },
     { name = "openai", marker = "extra == 'all'" },
     { name = "openai", marker = "extra == 'legacy'" },
     { name = "opentelemetry-instrumentation-fastapi", marker = "extra == 'all'" },
@@ -4748,6 +4773,7 @@ requires-dist = [
     { name = "pydantic", marker = "extra == 'all'", specifier = ">=2" },
     { name = "pydantic", marker = "extra == 'modern'", specifier = ">=2" },
     { name = "pydantic-ai", marker = "extra == 'ai'" },
+    { name = "pydantic-ai", marker = "extra == 'ai-pydantic'" },
     { name = "pydantic-ai", marker = "extra == 'all'" },
     { name = "pydantic-ai", marker = "extra == 'modern'" },
     { name = "pydantic-settings" },
@@ -4786,7 +4812,7 @@ requires-dist = [
     { name = "wordcloud", marker = "extra == 'legacy'" },
     { name = "wordcloud", marker = "extra == 'viz'" },
 ]
-provides-extras = ["web", "viz", "nlp", "ai", "torch", "schema", "data", "quality", "graph", "rag", "rag-pdfmux", "reports", "ui", "observability", "legacy", "modern", "all"]
+provides-extras = ["web", "viz", "nlp", "ai", "ai-pydantic", "ai-instructor", "ai-dspy", "ai-llama-index", "ai-rag", "torch", "schema", "data", "quality", "graph", "rag", "rag-pdfmux", "reports", "ui", "observability", "legacy", "modern", "all"]
 
 [package.metadata.requires-dev]
 dev = [
