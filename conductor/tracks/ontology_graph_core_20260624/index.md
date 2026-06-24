@@ -7,4 +7,5 @@ This track implements the first maintained ontology and graph-computation layer 
 - [Spec](./spec.md)
 - [Plan](./plan.md)
 - [Verification](./verification.md)
-
+- [Review](./review.md)
+- [Metadata](./metadata.json)

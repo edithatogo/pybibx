@@ -4,5 +4,5 @@
   "status": "completed",
   "created_at": "2026-06-24",
   "updated_at": "2026-06-24",
-  "description": "Add additive ontology models and RustWorkX graph builders with NetworkX export compatibility."
+  "description": "Add additive ontology models and RustWorkX graph builders with NetworkX export compatibility and reviewed fail-closed graph contracts."
 }

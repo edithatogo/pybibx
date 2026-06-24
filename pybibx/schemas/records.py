@@ -21,6 +21,9 @@ DOI_RE = re.compile(r"^10\.\d{4,9}/[-._;()/:A-Z0-9]+$", re.IGNORECASE)
 ORCID_RE = re.compile(r"^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$", re.IGNORECASE)
 ROR_RE = re.compile(r"^https://ror\.org/0[a-hj-km-np-tv-z0-9]{7}\d$", re.IGNORECASE)
 COUNTRY_RE = re.compile(r"^[A-Z]{2}$")
+ORCID_MODULUS = 11
+ORCID_CHECK_DIGIT_BASE = 12
+ORCID_X_VALUE = 10
 
 
 class StrictSchemaModel(BaseModel):
@@ -55,6 +58,16 @@ def normalize_orcid(value: str | None) -> str | None:
         stripped = stripped[len("https://orcid.org/") :]
     if not ORCID_RE.fullmatch(stripped):
         msg = "ORCID must be a bare ORCID or https://orcid.org/ URL"
+        raise ValueError(msg)
+    digits = stripped.replace("-", "").upper()
+    total = 0
+    for digit in digits[:-1]:
+        total = (total + int(digit)) * 2
+    remainder = total % ORCID_MODULUS
+    result = (ORCID_CHECK_DIGIT_BASE - remainder) % ORCID_MODULUS
+    expected_check_digit = "X" if result == ORCID_X_VALUE else str(result)
+    if digits[-1] != expected_check_digit:
+        msg = "ORCID check digit is invalid"
         raise ValueError(msg)
     return f"https://orcid.org/{stripped.upper()}"
 

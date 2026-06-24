@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 from enum import StrEnum
 from itertools import combinations
@@ -47,7 +48,7 @@ class GraphEdgePayload(StrictSchemaModel):
 
 type RustworkxGraph = rx.PyDiGraph[GraphNodePayload, GraphEdgePayload] | rx.PyGraph[GraphNodePayload, GraphEdgePayload]
 type NetworkxGraph = (
-    nx.DiGraph[str, dict[str, object], dict[str, object]] | nx.Graph[str, dict[str, object], dict[str, object]]
+    nx.MultiDiGraph[str, dict[str, object], dict[str, object]] | nx.Graph[str, dict[str, object], dict[str, object]]
 )
 
 
@@ -96,8 +97,14 @@ def build_coauthorship_graph(works: list[Work] | tuple[Work, ...]) -> GraphBuild
     graph = rx.PyGraph()
     node_indices: dict[str, int] = {}
     edge_weights: dict[tuple[str, str], float] = {}
+    seen_work_ids: set[str] = set()
+    _reject_ambiguous_author_identities(works)
 
     for work in works:
+        if work.work_id in seen_work_ids:
+            msg = f"duplicate work_id in graph input: {work.work_id}"
+            raise GraphBuildError(msg)
+        seen_work_ids.add(work.work_id)
         author_ids = [_author_id(author) for author in work.authors]
         for author in work.authors:
             author_id = _author_id(author)
@@ -132,7 +139,7 @@ def build_coauthorship_graph(works: list[Work] | tuple[Work, ...]) -> GraphBuild
 def to_networkx(result: GraphBuildResult) -> NetworkxGraph:
     network = cast(
         "NetworkxGraph",
-        nx.DiGraph() if isinstance(result.graph, rx.PyDiGraph) else nx.Graph(),
+        nx.MultiDiGraph() if isinstance(result.graph, rx.PyDiGraph) else nx.Graph(),
     )
     for node_index in result.graph.node_indices():
         payload = result.graph.get_node_data(node_index)
@@ -163,6 +170,14 @@ def _add_work_nodes(graph: RustworkxGraph, works: list[Work] | tuple[Work, ...])
 
 def _author_id(author: Author) -> str:
     return author.orcid or f"name:{author.display_name.casefold()}"
+
+
+def _reject_ambiguous_author_identities(works: list[Work] | tuple[Work, ...]) -> None:
+    fallback_ids = [_author_id(author) for work in works for author in work.authors if author.orcid is None]
+    ambiguous_ids = sorted(author_id for author_id, count in Counter(fallback_ids).items() if count > 1)
+    if ambiguous_ids:
+        msg = f"coauthorship graph requires ORCID for repeated unidentified author names: {ambiguous_ids}"
+        raise GraphBuildError(msg)
 
 
 def _citation_weight(intent: CitationIntent) -> float:

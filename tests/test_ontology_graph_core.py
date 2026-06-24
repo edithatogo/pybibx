@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
+
 import networkx as nx
 import pytest
 from pydantic import ValidationError
@@ -28,6 +31,7 @@ from pybibx.schemas import (
 
 EXPECTED_EDGE_COUNT = 1
 EXPECTED_NODE_COUNT = 2
+PARALLEL_EDGE_COUNT = 2
 REFUTES_EDGE_WEIGHT = 2.0
 TWO_SHARED_PUBLICATIONS_WEIGHT = 2.0
 
@@ -67,6 +71,16 @@ def test_additive_ontology_bundle_preserves_required_namespaces() -> None:
     assert bundle.orcid[0].orcid == "https://orcid.org/0000-0002-1825-0097"
     assert bundle.csl is not None
     assert bundle.csl.doi == "10.1234/ontology"
+    assert {stamp.name for stamp in bundle.compatibility.ontology} >= {
+        "cito",
+        "fabio",
+        "frapo",
+        "pso",
+        "org",
+        "ror",
+        "orcid",
+        "csl",
+    }
 
 
 def test_ontology_terms_derive_prefixed_ids_and_iris() -> None:
@@ -82,6 +96,9 @@ def test_ontology_identifier_validation_fails_closed() -> None:
 
     with pytest.raises(ValidationError, match="ORCID"):
         OrcidIdentityFacet(orcid="bad-orcid", display_name="Bad Author")
+
+    with pytest.raises(ValidationError, match="check digit"):
+        OrcidIdentityFacet(orcid="0000-0002-1825-0098", display_name="Bad Check Digit")
 
 
 def test_rustworkx_citation_graph_exports_to_networkx() -> None:
@@ -105,11 +122,44 @@ def test_rustworkx_citation_graph_exports_to_networkx() -> None:
 
     assert result.graph.num_nodes() == EXPECTED_NODE_COUNT
     assert result.graph.num_edges() == EXPECTED_EDGE_COUNT
-    assert isinstance(exported, nx.DiGraph)
+    assert isinstance(exported, nx.MultiDiGraph)
     assert exported.nodes["W1"]["doi"] == "10.1234/source"
-    assert exported["W1"]["W2"]["intent"] == CitationIntent.REFUTES.value
-    assert exported["W1"]["W2"]["weight"] == REFUTES_EDGE_WEIGHT
-    assert exported["W1"]["W2"]["context_text"] == "The newer result refutes the older one."
+    edge_payload = next(iter(exported["W1"]["W2"].values()))
+    assert edge_payload["intent"] == CitationIntent.REFUTES.value
+    assert edge_payload["weight"] == REFUTES_EDGE_WEIGHT
+    assert edge_payload["context_text"] == "The newer result refutes the older one."
+
+
+def test_networkx_export_preserves_parallel_citation_edges() -> None:
+    source = Work(work_id="W1", title="Source")
+    target = Work(work_id="W2", title="Target")
+    citations = (
+        Citation(
+            source_work_id=source.work_id,
+            target_work_id=target.work_id,
+            intent=CitationIntent.REFUTES,
+            context_text="First semantic context.",
+            evidence_ids=("e1",),
+        ),
+        Citation(
+            source_work_id=source.work_id,
+            target_work_id=target.work_id,
+            intent=CitationIntent.SUPPORTS,
+            context_text="Second semantic context.",
+            evidence_ids=("e2",),
+        ),
+    )
+
+    exported = to_networkx(build_citation_graph((source, target), citations))
+    edge_payloads = list(exported["W1"]["W2"].values())
+
+    assert isinstance(exported, nx.MultiDiGraph)
+    assert len(edge_payloads) == PARALLEL_EDGE_COUNT
+    assert {payload["context_text"] for payload in edge_payloads} == {
+        "First semantic context.",
+        "Second semantic context.",
+    }
+    assert {tuple(payload["evidence_ids"]) for payload in edge_payloads} == {("e1",), ("e2",)}
 
 
 def test_citation_graph_rejects_unknown_work_references() -> None:
@@ -123,6 +173,8 @@ def test_citation_graph_rejects_unknown_work_references() -> None:
 def test_coauthorship_graph_aggregates_shared_publications_and_exports_networkx() -> None:
     ada = Author(display_name="Ada Lovelace", orcid="0000-0002-1825-0097")
     grace = Author(display_name="Grace Hopper", orcid="0000-0002-1694-233X")
+    assert ada.orcid is not None
+    assert grace.orcid is not None
     works = (
         Work(work_id="W1", title="Joint paper 1", authors=(ada, grace)),
         Work(work_id="W2", title="Joint paper 2", authors=(grace, ada)),
@@ -136,3 +188,38 @@ def test_coauthorship_graph_aggregates_shared_publications_and_exports_networkx(
     assert not exported.is_directed()
     assert exported[ada.orcid][grace.orcid]["kind"] == "coauthorship"
     assert exported[ada.orcid][grace.orcid]["weight"] == TWO_SHARED_PUBLICATIONS_WEIGHT
+
+
+def test_coauthorship_graph_rejects_duplicate_work_ids() -> None:
+    ada = Author(display_name="Ada Lovelace", orcid="0000-0002-1825-0097")
+    grace = Author(display_name="Grace Hopper", orcid="0000-0002-1694-233X")
+
+    with pytest.raises(GraphBuildError, match="duplicate work_id"):
+        build_coauthorship_graph(
+            (
+                Work(work_id="W1", title="Joint paper 1", authors=(ada, grace)),
+                Work(work_id="W1", title="Duplicate paper", authors=(ada, grace)),
+            ),
+        )
+
+
+def test_coauthorship_graph_rejects_ambiguous_same_name_authors_without_orcid() -> None:
+    with pytest.raises(GraphBuildError, match="requires ORCID"):
+        build_coauthorship_graph(
+            (
+                Work(work_id="W1", title="Paper 1", authors=(Author(display_name="Alex Kim"),)),
+                Work(work_id="W2", title="Paper 2", authors=(Author(display_name="Alex Kim"),)),
+            ),
+        )
+
+
+def test_graph_import_does_not_load_legacy_base_runtime() -> None:
+    code = (
+        "import sys; "
+        "from pybibx.graph import build_citation_graph; "
+        "assert build_citation_graph is not None; "
+        "assert 'pybibx.base.pbx' not in sys.modules; "
+        "assert 'pandas' not in sys.modules"
+    )
+
+    subprocess.run([sys.executable, "-c", code], check=True)  # noqa: S603

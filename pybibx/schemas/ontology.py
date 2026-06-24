@@ -8,6 +8,7 @@ from pydantic import Field, field_validator, model_validator
 
 from pybibx.schemas.enums import CitationIntent, PublicationStatus, WorkType
 from pybibx.schemas.records import StrictSchemaModel, normalize_doi, normalize_orcid, normalize_ror
+from pybibx.versioning import CompatibilityProfile, VersionedSurface, VersionStamp
 
 
 class OntologyNamespace(StrEnum):
@@ -33,6 +34,15 @@ NAMESPACE_IRIS: dict[OntologyNamespace, str] = {
     OntologyNamespace.ORCID: "https://orcid.org/",
     OntologyNamespace.CSL: "https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html#",
 }
+
+
+def default_ontology_compatibility_profile() -> CompatibilityProfile:
+    return CompatibilityProfile(
+        ontology=tuple(
+            VersionStamp(surface=VersionedSurface.ONTOLOGY, name=namespace.value, version="2026-06-24")
+            for namespace in OntologyNamespace
+        ),
+    )
 
 
 class OntologyTerm(StrictSchemaModel):
@@ -180,3 +190,4 @@ class SemanticOntologyBundle(StrictSchemaModel):
     ror: tuple[RorOrganizationFacet, ...] = Field(default_factory=tuple)
     orcid: tuple[OrcidIdentityFacet, ...] = Field(default_factory=tuple)
     csl: CslItem | None = None
+    compatibility: CompatibilityProfile = Field(default_factory=default_ontology_compatibility_profile)
