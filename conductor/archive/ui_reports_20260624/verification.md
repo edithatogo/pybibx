@@ -17,7 +17,8 @@ Local verification refreshed on 2026-06-24:
 
 Remote verification:
 
-- GitHub Actions `quality`: pending for this closeout commit until pushed.
+- GitHub Actions `quality`: passed on pushed commit `6b8f7f1876309d1c4ebd044a3fd981a8bbd795f0`.
+  Run: https://github.com/edithatogo/pybibx/actions/runs/28074844438
 
 ## Scope Notes
 
@@ -30,5 +31,5 @@ Remote verification:
 - Expected code paths: `pybibx/reports/exports.py`, `tests/test_ui_reports.py`, and packaging metadata/tests.
 - Expected docs: track index, review, and verification are updated with acceptance evidence.
 - Unrelated files: none intentionally changed.
-- Acceptance: all spec bullets are mapped in `review.md` and covered by local gates; remote CI remains required before archive.
-- Blockers: Cline/DeepSeek remains blocked by non-TTY config, so Codex subagents were used; GitHub Actions evidence remains pending until push.
+- Acceptance: all spec bullets are mapped in `review.md` and covered by local gates plus remote CI.
+- Blockers: Cline/DeepSeek remains blocked by non-TTY config, so Codex subagents were used; no repository-local blocker remains.
