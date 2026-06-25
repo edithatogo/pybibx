@@ -1,0 +1,8 @@
+{
+  "track_id": "end_to_end_provider_pipeline_20260625",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-06-25T08:02:38Z",
+  "updated_at": "2026-06-25T08:02:38Z",
+  "description": "Build an offline end-to-end provider pipeline from registry-backed fixtures through normalized records and exports."
+}

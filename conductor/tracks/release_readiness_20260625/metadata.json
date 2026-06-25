@@ -1,0 +1,8 @@
+{
+  "track_id": "release_readiness_20260625",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-06-25T08:02:38Z",
+  "updated_at": "2026-06-25T08:02:38Z",
+  "description": "Prepare the PyBibX 6.0 alpha release boundary, documentation, compatibility matrix, and package evidence."
+}
