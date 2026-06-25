@@ -4,7 +4,7 @@ This file tracks major tracks for the project. Each track has its own detailed p
 
 ---
 
-- [ ] **Track: Legacy Runtime Bridge**
+- [~] **Track: Legacy Runtime Bridge**
 *Link: [./tracks/legacy_runtime_bridge_20260625/](./tracks/legacy_runtime_bridge_20260625/)*
 
 ---
