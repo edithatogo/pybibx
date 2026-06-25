@@ -15,6 +15,7 @@ Verified at `2026-06-25T08:11:48Z`.
 - `python scripts/check_conductor_swarm.py`: passed.
 - `python scripts/conductor_swarm.py validate-config --json`: passed.
 - `python scripts/conductor_swarm.py plan --json`: passed and reports Codex swarm fallback active while Cline remains non-TTY blocked.
+- GitHub Actions `quality` passed for commit `86bd35a`: https://github.com/edithatogo/pybibx/actions/runs/28156380025
 
 ## Implemented Surface
 
