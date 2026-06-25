@@ -11,7 +11,7 @@
     - [x] Test legacy dataframe/export rows to maintained records.
     - [x] Test legacy import smoke behavior remains unchanged.
     - [x] Test unsupported paths produce explicit errors.
-- [ ] Task: Conductor - User Manual Verification 'Compatibility Contract And Baseline Tests' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Compatibility Contract And Baseline Tests' (Protocol in workflow.md)
 
 ## Phase 2: Bridge Implementation
 
@@ -27,7 +27,7 @@
     - [x] Show provider pipeline output feeding a legacy-compatible dataframe.
     - [x] Show legacy export rows converted into maintained records.
     - [x] State what remains unsupported.
-- [ ] Task: Conductor - User Manual Verification 'Bridge Implementation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Bridge Implementation' (Protocol in workflow.md)
 
 ## Phase 3: Validation And Evidence
 
@@ -40,6 +40,6 @@
     - [x] Run Conductor swarm smoke checks.
 - [x] Task: Record implementation evidence.
     - [x] Add `verification.md` with local checks, bridge coverage, and unsupported boundaries.
-    - [ ] Add `review.md` after conductor review and fix loop.
+    - [x] Add `review.md` after conductor review and fix loop.
     - [x] Commit, push, and confirm GitHub Actions quality passes.
-- [ ] Task: Conductor - User Manual Verification 'Validation And Evidence' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Validation And Evidence' (Protocol in workflow.md)

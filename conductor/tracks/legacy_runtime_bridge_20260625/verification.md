@@ -5,6 +5,7 @@
 - Added isolated bridge package: `pybibx.legacy`.
 - Added maintained-to-legacy adapter: `works_to_legacy_dataframe`.
 - Added legacy-to-maintained adapters: `legacy_dataframe_to_works` and `legacy_dataframe_to_export_manifest`.
+- Added legacy-to-maintained citation adapter: `legacy_dataframe_to_citations`.
 - Added typed fail-closed boundary: `LegacyBridgeError` and `require_supported_legacy_analysis`.
 - Added migration notes: `migration.md`.
 - Added regression coverage: `tests/test_legacy_runtime_bridge.py`.

@@ -12,12 +12,13 @@ import pytest
 from pybibx.legacy import (
     LEGACY_DATAFRAME_COLUMNS,
     LegacyBridgeError,
+    legacy_dataframe_to_citations,
     legacy_dataframe_to_export_manifest,
     legacy_dataframe_to_works,
     require_supported_legacy_analysis,
     works_to_legacy_dataframe,
 )
-from pybibx.schemas import Author, Institution, OutputFormat, ProviderName, Work
+from pybibx.schemas import Author, Citation, Institution, OutputFormat, ProviderName, Work
 
 LEGACY_YEAR = 2025
 LEGACY_CITATION_COUNT = 12
@@ -60,13 +61,21 @@ def test_works_to_legacy_dataframe_can_bootstrap_existing_probe() -> None:
         source_provider=ProviderName.OPENALEX,
     )
 
-    frame = works_to_legacy_dataframe((work,))
+    citation = Citation(
+        source_work_id=work.work_id,
+        target_work_id="W-target",
+        source_doi=work.doi,
+        target_doi="10.5678/target.fixture",
+    )
+
+    frame = works_to_legacy_dataframe((work,), citations=(citation,))
 
     assert tuple(frame.columns) == LEGACY_DATAFRAME_COLUMNS
     assert frame.loc[0, "author"] == "Ada Lovelace and Grace Hopper"
     assert frame.loc[0, "doi"] == "10.1234/bridge.fixture"
     assert frame.loc[0, "note"] == "Cited by: 7"
     assert frame.loc[0, "author_keywords"] == "bibliometrics; pipelines"
+    assert frame.loc[0, "references"] == "10.5678/target.fixture"
     assert frame.loc[0, "country"] == "NZ"
     assert frame.loc[0, "pybibx_schema_version"] == work.compatibility.schema_profile.version
 
@@ -93,11 +102,13 @@ def test_legacy_dataframe_to_works_normalizes_common_export_columns() -> None:
                 "Author Keywords": "bibliometrics; scientometrics",
                 "Institution": "Example University",
                 "Country": "au",
+                "References": "10.5555/ref.one; Legacy reference without DOI",
             },
         ],
     )
 
     works = legacy_dataframe_to_works(frame, source_provider=ProviderName.SCOPUS)
+    citations = legacy_dataframe_to_citations(frame)
     manifest = legacy_dataframe_to_export_manifest(frame, output_format=OutputFormat.JSONL)
 
     assert len(works) == 1
@@ -110,6 +121,10 @@ def test_legacy_dataframe_to_works_normalizes_common_export_columns() -> None:
     assert works[0].source_provider is ProviderName.SCOPUS
     assert works[0].compatibility.input is not None
     assert works[0].compatibility.input.version == "legacy-runtime"
+    assert [citation.target_work_id for citation in citations] == ["10.5555/ref.one", "Legacy reference without DOI"]
+    assert citations[0].source_work_id == "10.4321/legacy.export"
+    assert citations[0].target_doi == "10.5555/ref.one"
+    assert citations[1].target_doi is None
     assert manifest.record_count == 1
     assert manifest.output_format is OutputFormat.JSONL
 
@@ -120,6 +135,9 @@ def test_legacy_dataframe_to_works_fails_closed_for_missing_or_invalid_fields() 
 
     with pytest.raises(LegacyBridgeError, match="failed to convert legacy row 0"):
         legacy_dataframe_to_works(pd.DataFrame([{"Title": "Bad DOI", "DOI": "not-a-doi"}]))
+
+    with pytest.raises(LegacyBridgeError, match="references column"):
+        legacy_dataframe_to_citations(pd.DataFrame([{"Title": "No references"}]))
 
 
 def test_unsupported_legacy_paths_fail_with_clear_error() -> None:

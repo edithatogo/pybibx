@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from pybibx.schemas import (
     Author,
+    Citation,
     ExportManifest,
     ExportProfile,
     InputFormat,
@@ -128,9 +129,22 @@ class LegacyBridgeDiagnostic(BaseModel):
     message: str = Field(min_length=1)
 
 
-def works_to_legacy_dataframe(works: Sequence[Work], *, source: str = "pybibx6") -> pd.DataFrame:
+def works_to_legacy_dataframe(
+    works: Sequence[Work],
+    *,
+    citations: Sequence[Citation] = (),
+    source: str = "pybibx6",
+) -> pd.DataFrame:
     """Convert maintained `Work` records to the minimal legacy `pbx_probe` dataframe shape."""
-    rows = [_work_to_legacy_row(work, source=source) for work in works]
+    references_by_source = _legacy_references_by_source(citations)
+    rows = [
+        _work_to_legacy_row(
+            work,
+            references=_references_for_work(work, references_by_source),
+            source=source,
+        )
+        for work in works
+    ]
     return pd.DataFrame(rows, columns=LEGACY_DATAFRAME_COLUMNS)
 
 
@@ -150,6 +164,38 @@ def legacy_dataframe_to_works(frame: pd.DataFrame, *, source_provider: ProviderN
             msg = f"failed to convert legacy row {row_index}: {exc}"
             raise LegacyBridgeError(msg) from exc
     return tuple(works)
+
+
+def legacy_dataframe_to_citations(frame: pd.DataFrame) -> tuple[Citation, ...]:
+    """Convert legacy `references` columns into maintained citation edges."""
+    normalized_columns = _normalized_column_lookup(frame.columns.tolist())
+    reference_column = _first_column(normalized_columns, ("references", "cited_references", "cr"))
+    if reference_column is None:
+        msg = "legacy dataframe must include a references column for citation conversion"
+        raise LegacyBridgeError(msg)
+
+    doi_column = _first_column(normalized_columns, DOI_ALIASES)
+    work_id_column = _first_column(normalized_columns, WORK_ID_ALIASES)
+    citations: list[Citation] = []
+    for row_index, row in enumerate(frame.to_dict(orient="records")):
+        values = {str(column): value for column, value in row.items()}
+        source_doi = _valid_optional_doi(_optional_cell(values, doi_column))
+        source_work_id = _source_work_id(row_index, values, work_id_column, source_doi)
+        for target in _split_semicolon_values(_optional_cell(values, reference_column)):
+            try:
+                citations.append(
+                    Citation(
+                        source_work_id=source_work_id,
+                        target_work_id=target,
+                        source_doi=source_doi,
+                        target_doi=_valid_optional_doi(target),
+                        compatibility=_bridge_compatibility(input_format=InputFormat.CSV),
+                    ),
+                )
+            except (TypeError, ValueError, ValidationError) as exc:
+                msg = f"failed to convert legacy citation in row {row_index}: {exc}"
+                raise LegacyBridgeError(msg) from exc
+    return tuple(citations)
 
 
 def legacy_dataframe_to_export_manifest(
@@ -181,7 +227,7 @@ def require_supported_legacy_analysis(analysis_name: str) -> None:
     raise LegacyBridgeError(msg)
 
 
-def _work_to_legacy_row(work: Work, *, source: str) -> dict[str, str]:
+def _work_to_legacy_row(work: Work, *, references: str, source: str) -> dict[str, str]:
     compatibility = work.compatibility
     author_value = _join_nonempty((author.display_name for author in work.authors), separator=" and ")
     institution_value = _join_nonempty(institution.display_name for institution in work.institutions)
@@ -204,7 +250,7 @@ def _work_to_legacy_row(work: Work, *, source: str) -> dict[str, str]:
         "abstract": UNKNOWN,
         "author_keywords": keyword_value,
         "keywords": sdg_value,
-        "references": UNKNOWN,
+        "references": references,
         "affiliation": institution_value,
         "affiliation_": institution_value,
         "correspondence_address1": institution_value,
@@ -268,6 +314,24 @@ def _bridge_compatibility(
     )
 
 
+def _legacy_references_by_source(citations: Sequence[Citation]) -> dict[str, list[str]]:
+    references_by_source: dict[str, list[str]] = {}
+    for citation in citations:
+        reference = citation.target_doi or citation.target_work_id
+        for source_key in (citation.source_work_id, citation.source_doi):
+            if source_key is None:
+                continue
+            references_by_source.setdefault(source_key, []).append(reference)
+    return references_by_source
+
+
+def _references_for_work(work: Work, references_by_source: Mapping[str, list[str]]) -> str:
+    references = references_by_source.get(work.work_id, [])
+    if work.doi is not None:
+        references = [*references, *references_by_source.get(work.doi, [])]
+    return _join_nonempty(dict.fromkeys(references))
+
+
 def _normalized_column_lookup(columns: list[object]) -> dict[str, str]:
     lookup: dict[str, str] = {}
     for column in columns:
@@ -301,6 +365,14 @@ def _optional_string(
     return text or None
 
 
+def _optional_cell(values: Mapping[str, object], column: str | None) -> str | None:
+    if column is None:
+        return None
+    value = values[column]
+    text = str(value).strip()
+    return text or None
+
+
 def _required_string(
     values: Mapping[str, object],
     normalized_columns: Mapping[str, str],
@@ -317,6 +389,27 @@ def _required_string(
 
 def _is_unknown(value: str | None) -> bool:
     return value is None or value.strip().lower() in {"", "unknown", "none", "nan", "null"}
+
+
+def _valid_optional_doi(value: str | None) -> str | None:
+    if _is_unknown(value):
+        return None
+    try:
+        return Work(work_id="doi-validator", title="DOI validator", doi=value).doi
+    except ValidationError:
+        return None
+
+
+def _source_work_id(
+    row_index: int,
+    values: Mapping[str, object],
+    work_id_column: str | None,
+    source_doi: str | None,
+) -> str:
+    work_id = _optional_cell(values, work_id_column)
+    if work_id is not None and not _is_unknown(work_id):
+        return work_id
+    return source_doi or f"legacy:{row_index}"
 
 
 def _join_nonempty(values: Iterable[str], *, separator: str = "; ") -> str:

@@ -25,18 +25,19 @@ metadata, citation counts, authors, keywords, sources, institutions, and countri
 ## Supported Legacy To 6.0 Workflow
 
 Representative legacy dataframe exports can be converted back into maintained `Work` records and
-export manifests:
+`Citation` records plus export manifests:
 
 ```python
-from pybibx.legacy import legacy_dataframe_to_export_manifest, legacy_dataframe_to_works
+from pybibx.legacy import legacy_dataframe_to_citations, legacy_dataframe_to_export_manifest, legacy_dataframe_to_works
 from pybibx.schemas import ProviderName
 
 works = legacy_dataframe_to_works(legacy_export, source_provider=ProviderName.SCOPUS)
+citations = legacy_dataframe_to_citations(legacy_export)
 manifest = legacy_dataframe_to_export_manifest(legacy_export)
 ```
 
 The reverse adapter recognizes common variants such as `Title`, `Authors`, `Year`, `DOI`,
-`Citations`, `Document Type`, `Author Keywords`, `Institution`, and `Country`.
+`Citations`, `Document Type`, `Author Keywords`, `Institution`, `Country`, and `References`.
 
 ## Boundaries
 
