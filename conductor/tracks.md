@@ -4,11 +4,6 @@ This file tracks major tracks for the project. Each track has its own detailed p
 
 ---
 
-- [x] **Track: End-To-End Provider Pipeline**
-*Link: [./tracks/end_to_end_provider_pipeline_20260625/](./tracks/end_to_end_provider_pipeline_20260625/)*
-
----
-
 - [ ] **Track: Legacy Runtime Bridge**
 *Link: [./tracks/legacy_runtime_bridge_20260625/](./tracks/legacy_runtime_bridge_20260625/)*
 
