@@ -42,3 +42,7 @@ Unsupported paths fail with `LegacyBridgeError` or remain documented limitations
 - `python scripts/check_conductor_swarm.py` - pass
 - `python scripts/conductor_swarm.py validate-config --json` - pass
 - `python scripts/conductor_swarm.py plan --json` - pass
+
+## Remote Checks
+
+- GitHub Actions `quality` run `28157039083` for commit `8018708fd0950f601c8e28b08253a29085d675d4` - pass
