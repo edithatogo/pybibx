@@ -37,3 +37,7 @@
 - Google Scholar remains export/import-only; default scraping is unsupported.
 - Cline with `deepseek-v4-flash` remains blocked from this non-TTY Codex session.
 - Hosted LLMs, Reflex, Cosmograph, Rig, Graphina, PyG, PDFMux, and Monty are not production-ready claims unless separately verified.
+
+## Remote Checks
+
+- GitHub Actions `quality` run `28157796294` for commit `054197215ff2661a55128bf0fbf09d61aa508227` - pass.
