@@ -4,5 +4,5 @@ This file tracks major tracks for the project. Each track has its own detailed p
 
 ---
 
-- [ ] **Track: Release Readiness**
+- [~] **Track: Release Readiness**
 *Link: [./tracks/release_readiness_20260625/](./tracks/release_readiness_20260625/)*
