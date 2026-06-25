@@ -41,6 +41,7 @@ Homepage = "https://github.com/Valdecy/pybibx"
 Repository = "https://github.com/Valdecy/pybibx"
 
 [project.scripts]
+pybibx-provider-pipeline = "pybibx.pipeline.__main__:main"
 pybibx-webapp = "pybibx.base.app:web_app"
 
 [project.optional-dependencies]
