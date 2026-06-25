@@ -94,6 +94,12 @@ RELEASE_SURFACE: tuple[ReleaseSurfaceItem, ...] = (
         stability_note="Pydantic-settings entry point for local provider, quality, AI, and RAG configuration.",
     ),
     ReleaseSurfaceItem(
+        module="pybibx.release",
+        kind=ReleaseSurfaceKind.PUBLIC,
+        exports=("release_readiness_contract", "ReleaseReadinessContract", "ReleaseSurfaceKind"),
+        stability_note="Machine-readable release boundary used by tests and release-readiness docs.",
+    ),
+    ReleaseSurfaceItem(
         module="pybibx.providers",
         kind=ReleaseSurfaceKind.PUBLIC,
         exports=("DEFAULT_PROVIDER_REGISTRY", "ProviderRegistry", "ProviderSpec"),
@@ -155,6 +161,11 @@ RELEASE_SURFACE: tuple[ReleaseSurfaceItem, ...] = (
         exports=("pbx_probe",),
         stability_note="Legacy analysis engine remains supported but excluded from strict 6.0 type/lint gates.",
     ),
+    ReleaseSurfaceItem(
+        module="pybibx.base.*",
+        kind=ReleaseSurfaceKind.INTERNAL,
+        stability_note="Implementation modules under the legacy runtime are not part of the maintained alpha API.",
+    ),
 )
 
 EXTRA_COMPATIBILITY: tuple[ExtraCompatibilityItem, ...] = (
@@ -200,6 +211,12 @@ EXTRA_COMPATIBILITY: tuple[ExtraCompatibilityItem, ...] = (
         kind=ExtraCompatibilityKind.OPTIONAL_SAFE,
         install_command="uv sync --extra reports --group dev",
         note="No additional dependency today; marks report/export surface intent.",
+    ),
+    ExtraCompatibilityItem(
+        extra="licensed-providers",
+        kind=ExtraCompatibilityKind.CREDENTIAL_GATED,
+        install_command="uv sync --group dev",
+        note="Scopus and Web of Science are configured through settings and require user-provided credentials.",
     ),
     ExtraCompatibilityItem(
         extra="all",

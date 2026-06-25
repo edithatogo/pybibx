@@ -28,11 +28,14 @@ def test_release_contract_classifies_public_and_blocked_surfaces() -> None:
     extras = {item.extra: item for item in contract.extras}
 
     assert surfaces["pybibx.schemas"].kind is ReleaseSurfaceKind.PUBLIC
+    assert surfaces["pybibx.release"].kind is ReleaseSurfaceKind.PUBLIC
     assert surfaces["pybibx.legacy"].kind is ReleaseSurfaceKind.PUBLIC
     assert surfaces["pybibx.base"].kind is ReleaseSurfaceKind.LEGACY
+    assert surfaces["pybibx.base.*"].kind is ReleaseSurfaceKind.INTERNAL
     assert surfaces["pybibx.rag"].kind is ReleaseSurfaceKind.OPTIONAL
     assert extras["baseline"].baseline is True
     assert extras["baseline"].kind is ExtraCompatibilityKind.BASELINE_SAFE
+    assert extras["licensed-providers"].kind is ExtraCompatibilityKind.CREDENTIAL_GATED
     assert extras["all"].kind is ExtraCompatibilityKind.BLOCKED
     assert "--all-extras" in extras["all"].install_command
     assert any("PyPI" in gate for gate in contract.external_gates)

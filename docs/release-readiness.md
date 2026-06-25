@@ -9,6 +9,7 @@ PyBibX 6.0 alpha is a maintained refactor line on top of the PyBibX 5.9.2 packag
 | `pybibx` | Legacy compatibility | Keeps lazy `pbx_probe`, `bibliometrix`, `web_app`, and `web_stop` boundaries. |
 | `pybibx.schemas` | Public alpha | Pydantic v2 records for `Work`, `Author`, `Institution`, `Citation`, evidence, exports, and ontology facets. |
 | `pybibx.settings` | Public alpha | Pydantic-settings configuration for providers, quality lanes, AI, RAG, reports, and observability. |
+| `pybibx.release` | Public alpha | Machine-readable release boundary used by tests and release-readiness docs. |
 | `pybibx.providers` | Public alpha | Registry metadata for open, export-only, and credential-gated data sources. |
 | `pybibx.pipeline` | Public alpha | Offline provider pipeline for local fixtures and exports. |
 | `pybibx.legacy` | Public alpha | Adapters between maintained records and the legacy pandas `pbx_probe` runtime. |
@@ -19,6 +20,7 @@ PyBibX 6.0 alpha is a maintained refactor line on top of the PyBibX 5.9.2 packag
 | `pybibx.rag` | Optional | Legal full-text routing and local RAG planning contracts. |
 | `pybibx.ai` | Optional | PydanticAI, Instructor, DSPy, LlamaIndex, Ollama, and mistral.rs orchestration contracts. |
 | `pybibx.base` | Legacy | Existing analysis engine; excluded from strict 6.0 lint/type gates. |
+| `pybibx.base.*` | Internal | Implementation modules under the legacy runtime are not part of the maintained alpha API. |
 
 ## Optional-Extra Compatibility Matrix
 
@@ -31,6 +33,7 @@ PyBibX 6.0 alpha is a maintained refactor line on top of the PyBibX 5.9.2 packag
 | Reports | `uv sync --extra reports --group dev` | Optional | No heavy dependency today; marks export surface intent. |
 | UI | `uv sync --extra ui --group dev` | Probing only | Reflex evaluation, not a production UI claim. |
 | Legacy | `uv sync --extra legacy --group dev` | Probing only | Legacy NLP/UI stack; not baseline-safe on Python 3.14. |
+| Licensed providers | `uv sync --group dev` | Credential-gated | Scopus and Web of Science require user-provided credentials. |
 | All extras | `uv sync --all-extras --group dev` | Blocked for baseline | Kept out of CI while legacy NLP dependencies can fail on Python 3.14. |
 
 ## Release Notes
