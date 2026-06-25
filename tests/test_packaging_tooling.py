@@ -108,6 +108,8 @@ def test_conductor_swarm_uses_current_cline_json_invocation() -> None:
     assert '[path, "--json", "config"]' in script
     assert '[path, "config", "--json"]' not in script
     assert "cline doctor --json" in script
+    assert "providers.json" in script
+    assert "deepSeekApiKey" in script
     assert "cline --json config" in orchestration
     stale_blocker = "requires an interactive" + " TTY"
     assert stale_blocker not in script + orchestration + assignments + workflow

@@ -12,8 +12,8 @@
       "acceptance_criteria": [
         "Blocker-first checks run before any worker launch.",
         "Codex remains the only integration and commit lane.",
-        "Cline/DeepSeek remains blocked until provider/model verification succeeds.",
-        "Use Codex subagents for parallel work while Cline provider/model verification is blocked."
+        "Cline/DeepSeek can run only after provider/model and secret-key-name verification succeeds.",
+        "Use Codex subagents for parallel work if Cline launch verification fails."
       ],
       "no_revert_instruction": "Do not revert changes made by other agents or the user."
     },
@@ -24,7 +24,7 @@
         "tests/"
       ],
       "acceptance_criteria": [
-        "Use only Codex subagents while Cline/DeepSeek provider/model verification is blocked.",
+        "Use Codex subagents when Cline/DeepSeek launch verification is blocked or unnecessary.",
         "Keep each subagent on disjoint file ownership scopes.",
         "Report findings and verification evidence back to the Codex orchestrator before integration."
       ],

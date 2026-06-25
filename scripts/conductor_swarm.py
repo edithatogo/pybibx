@@ -27,11 +27,15 @@ TRACK_PLAN_CANDIDATES = (
 )
 DEFAULT_CONFIG = REPO / "conductor" / "swarm_assignments.json"
 DEFAULT_EVIDENCE_DIR = REPO / "conductor" / "swarm_runs"
+CLINE_SETTINGS_DIR = Path.home() / ".cline" / "data" / "settings"
+CLINE_PROVIDERS_FILE = CLINE_SETTINGS_DIR / "providers.json"
+CLINE_SECRETS_FILE = Path.home() / ".cline" / "data" / "secrets.json"
 CODEX_BIN = "/Applications/Codex.app/Contents/Resources/codex"
 CLINE_BIN = "cline"
 CODEX_MODEL = "gpt-5.5"
 CLINE_PROVIDER = "deepseek"
 CLINE_MODEL = "deepseek-v4-flash"
+CLINE_SECRET_KEYS = {CLINE_PROVIDER: ("deepSeekApiKey",)}
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 
@@ -131,7 +135,70 @@ def cline_provider_check() -> Check:
     text = json.dumps(redacted, sort_keys=True).lower()
     if CLINE_PROVIDER in text and CLINE_MODEL.lower() in text:
         return Check("cline_provider", "ok", f"{CLINE_PROVIDER}/{CLINE_MODEL} present in redacted config")
-    return Check("cline_provider", "blocked", f"{CLINE_PROVIDER}/{CLINE_MODEL} not present in redacted config")
+    return cline_provider_settings_check()
+
+
+def cline_provider_settings_check() -> Check:
+    if not CLINE_PROVIDERS_FILE.exists():
+        return Check(
+            "cline_provider",
+            "blocked",
+            f"{CLINE_PROVIDER}/{CLINE_MODEL} not present in CLI config and providers.json is missing",
+        )
+    try:
+        data = json.loads(CLINE_PROVIDERS_FILE.read_text())
+    except json.JSONDecodeError:
+        return Check("cline_provider", "blocked", "providers.json did not emit JSON in this environment")
+
+    providers = data.get("providers", {})
+    if not isinstance(providers, dict):
+        return Check("cline_provider", "blocked", "providers.json does not contain a providers object")
+    for item in providers.values():
+        if not isinstance(item, dict):
+            continue
+        settings = item.get("settings", {})
+        if not isinstance(settings, dict):
+            continue
+        provider = str(settings.get("provider", "")).lower()
+        model = str(settings.get("model", "")).lower()
+        if provider == CLINE_PROVIDER and model == CLINE_MODEL.lower():
+            return cline_provider_secret_check()
+    return Check(
+        "cline_provider",
+        "blocked",
+        f"{CLINE_PROVIDER}/{CLINE_MODEL} not present in redacted CLI config or providers.json",
+    )
+
+
+def cline_provider_secret_check() -> Check:
+    expected_keys = CLINE_SECRET_KEYS.get(CLINE_PROVIDER, ())
+    if not expected_keys:
+        return Check("cline_provider", "ok", f"{CLINE_PROVIDER}/{CLINE_MODEL} present in providers.json")
+    if not CLINE_SECRETS_FILE.exists():
+        return Check(
+            "cline_provider",
+            "blocked",
+            f"{CLINE_PROVIDER}/{CLINE_MODEL} present in providers.json but secrets.json is missing",
+        )
+    try:
+        secrets = json.loads(CLINE_SECRETS_FILE.read_text())
+    except json.JSONDecodeError:
+        return Check("cline_provider", "blocked", "secrets.json did not emit JSON in this environment")
+    if not isinstance(secrets, dict):
+        return Check("cline_provider", "blocked", "secrets.json does not contain an object")
+    if all(key in secrets and bool(secrets[key]) for key in expected_keys):
+        key_list = ", ".join(expected_keys)
+        return Check(
+            "cline_provider",
+            "ok",
+            f"{CLINE_PROVIDER}/{CLINE_MODEL} present in providers.json with secret key name(s): {key_list}",
+        )
+    missing = ", ".join(key for key in expected_keys if not secrets.get(key))
+    return Check(
+        "cline_provider",
+        "blocked",
+        f"{CLINE_PROVIDER}/{CLINE_MODEL} present in providers.json but missing secret key name(s): {missing}",
+    )
 
 
 def cline_hub_check() -> Check:
@@ -152,10 +219,15 @@ def cline_hub_check() -> Check:
         return Check("cline_hub", "ok", "hub healthy")
     stale = data.get("staleHubPids") or []
     listening = data.get("listeningPids") or []
+    startup_locks = data.get("hubStartupLocks") or []
+    if not listening and not stale and not startup_locks:
+        return Check("cline_hub", "ok", "no hub listener or stale hub state; direct CLI mode available")
     return Check(
         "cline_hub",
         "warn",
-        f"hub unhealthy; listeningPids={listening}; staleHubPids={stale}; direct CLI checks still available",
+        "hub unhealthy; "
+        f"listeningPids={listening}; staleHubPids={stale}; hubStartupLocks={startup_locks}; "
+        "direct CLI checks still available",
     )
 
 
@@ -229,9 +301,8 @@ def assignment_plan() -> dict[str, object]:
             "Verify Codex CLI can run non-interactively.",
             "Verify Cline CLI exists.",
             "Verify Cline hub health with cline doctor --json and report unhealthy hubs as warnings.",
-            "Verify Cline provider/model config for deepseek-v4-flash with cline --json config; "
-            "otherwise block the Cline lane.",
-            "Use Codex swarm-review assignments while Cline provider/model verification is unavailable.",
+            "Verify Cline provider/model config for deepseek-v4-flash with cline --json config or providers.json.",
+            "Use Codex swarm-review assignments only when Cline launch verification fails or parallel review is safer.",
         ],
         "lanes": {
             "codex_orchestrator": {
@@ -248,14 +319,11 @@ def assignment_plan() -> dict[str, object]:
             "codex_swarm_fallback": {
                 "runner": "in-session multi-agent tool",
                 "model": CODEX_MODEL,
-                "role": "parallel review/exploration/verification when Cline is unavailable or provider/model blocked",
+                "role": "parallel review/exploration/verification when Cline launch verification fails",
             },
         },
-        "active_fallback": "codex_swarm_fallback",
-        "cline_blocker": (
-            "Cline lane requires deepseek/deepseek-v4-flash in cline --json config; "
-            "use Codex fallback until verified"
-        ),
+        "active_fallback": "codex_swarm_fallback only if Cline launch verification fails",
+        "cline_blocker": "none after provider/model and secret-key-name verification pass",
     }
 
 

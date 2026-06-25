@@ -11,7 +11,7 @@ This file defines how PyBibX Conductor tracks should be orchestrated across Code
 - A local `swarm` skill file was not found in the available skill directories.
 - The current session exposes multi-agent sub-agents, including `gpt-5.5`, through the in-session multi-agent tool.
 - Cline/DeepSeek availability means the CLI and provider/model are usable for the specific checkout; CLI presence alone is not enough to mark that lane verified.
-- Current blocker: `cline --json config` is callable in this checkout, but the redacted configuration does not currently verify `deepseek` with `deepseek-v4-flash`. `cline doctor --json` also reports an unhealthy hub, with the stale hub process belonging to a different checkout. Use Codex sub-agents for any needed parallel worker lanes until the provider/model check passes.
+- Current status: `cline --json config` is callable in this checkout, and the repo-local verifier can validate `deepseek` with `deepseek-v4-flash` from Cline `providers.json` plus the presence of the expected secret key name. `cline doctor --json` may still report an unhealthy hub when no hub daemon is listening; use Codex sub-agents if a Cline worker launch itself fails.
 
 ## Lanes
 
@@ -51,7 +51,7 @@ cline \
   "Work only on the assigned Conductor phase. Do not revert others' edits. Report changed files and verification."
 ```
 
-If the `deepseek-v4-flash` provider/model is not configured in `cline --json config`, record the blocker in the active track and use the Codex swarm fallback for local progress. Treat `cline doctor --json` hub failures as launch warnings unless the Cline worker command itself cannot run.
+If the `deepseek-v4-flash` provider/model is not configured in `cline --json config` or Cline `providers.json`, record the blocker in the active track and use the Codex swarm fallback for local progress. Treat `cline doctor --json` hub failures as launch warnings unless the Cline worker command itself cannot run.
 
 ### Codex Swarm Fallback Lane
 
@@ -76,15 +76,15 @@ If the `deepseek-v4-flash` provider/model is not configured in `cline --json con
 | --- | --- | --- | --- |
 | Repository and tooling foundation | Codex `gpt-5.5` | Cline `deepseek-v4-flash` | Codex owns final config; Cline can draft candidate files in an isolated worktree. |
 | Schema, settings, and versioning | Codex `gpt-5.5` | Codex swarm | Keep schema decisions under orchestrator control. |
-| Provider and ontology foundation | Codex `gpt-5.5` | Codex swarm | Cline/DeepSeek remains blocked until provider/model verification succeeds; use Codex sub-agents with disjoint file ownership. |
-| Processing, graphs, and data quality | Codex `gpt-5.5` | Codex swarm | Use Codex sub-agents for independent Polars/RustWorkX/data-quality slices while Cline provider/model verification is blocked. |
+| Provider and ontology foundation | Codex `gpt-5.5` | Cline `deepseek-v4-flash` or Codex swarm | Use Codex sub-agents with disjoint file ownership if Cline launch fails. |
+| Processing, graphs, and data quality | Codex `gpt-5.5` | Cline `deepseek-v4-flash` or Codex swarm | Use Codex sub-agents for independent Polars/RustWorkX/data-quality slices if Cline launch fails. |
 | AI, RAG, and local execution | Codex `gpt-5.5` | Codex swarm | Security-sensitive boundaries remain under Codex review. |
 | Observability, UI, and reporting | Codex `gpt-5.5` | Codex swarm | Use Codex sub-agents for docs/UI/report reviews while Cline is blocked. |
 | Verification and iteration | Codex `gpt-5.5` | Codex swarm | Swarm agents can run independent checklist reviews. |
 
 ## Verification
 
-- Verify `cline --help`, `cline doctor --json`, `cline --json config`, and `codex --help` before documenting CLI usage.
+- Verify `cline --help`, `cline doctor --json`, `cline --json config`, Cline provider metadata, and `codex --help` before documenting CLI usage.
 - Reject completion wording that marks Cline/DeepSeek as available, verified, or complete unless a local provider/model check has been recorded for this checkout.
 - Verify all worker outputs with the active track's quality gates.
 - Run `git diff --check` before committing.
