@@ -97,3 +97,17 @@ def test_prose_and_ci_configs_reference_required_tools() -> None:
     assert "astral-sh/ruff-action@v3" in workflow
     assert "uv run pyright" in workflow
     assert "uv run ty check pybibx/__init__.py" in workflow
+
+
+def test_conductor_swarm_uses_current_cline_json_invocation() -> None:
+    script = (REPO / "scripts" / "conductor_swarm.py").read_text(encoding="utf-8")
+    orchestration = (REPO / "conductor" / "agent-orchestration.md").read_text(encoding="utf-8")
+    assignments = (REPO / "conductor" / "swarm_assignments.json").read_text(encoding="utf-8")
+    workflow = (REPO / "conductor" / "workflow.md").read_text(encoding="utf-8")
+
+    assert '[path, "--json", "config"]' in script
+    assert '[path, "config", "--json"]' not in script
+    assert "cline doctor --json" in script
+    assert "cline --json config" in orchestration
+    stale_blocker = "requires an interactive" + " TTY"
+    assert stale_blocker not in script + orchestration + assignments + workflow

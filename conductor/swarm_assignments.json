@@ -13,7 +13,7 @@
         "Blocker-first checks run before any worker launch.",
         "Codex remains the only integration and commit lane.",
         "Cline/DeepSeek remains blocked until provider/model verification succeeds.",
-        "Use Codex subagents for parallel work while cline config --json requires an interactive TTY."
+        "Use Codex subagents for parallel work while Cline provider/model verification is blocked."
       ],
       "no_revert_instruction": "Do not revert changes made by other agents or the user."
     },
@@ -24,7 +24,7 @@
         "tests/"
       ],
       "acceptance_criteria": [
-        "Use only Codex subagents while Cline/DeepSeek is blocked by non-TTY configuration.",
+        "Use only Codex subagents while Cline/DeepSeek provider/model verification is blocked.",
         "Keep each subagent on disjoint file ownership scopes.",
         "Report findings and verification evidence back to the Codex orchestrator before integration."
       ],

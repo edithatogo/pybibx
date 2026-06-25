@@ -12,7 +12,7 @@
 - Codex with `gpt-5.5` is the primary orchestrator, integrator, and reviewer for Conductor track work.
 - Cline with `deepseek-v4-flash` is an external worker lane when the local Cline provider is configured and available.
 - The in-session multi-agent tool is the fallback swarm lane for Codex sub-agents when a local Cline/DeepSeek run is unavailable or should not touch the worktree.
-- In this non-TTY Codex session, Cline/DeepSeek is considered blocked because `cline config --json` requires an interactive TTY; use Codex sub-agents as the parallel worker fallback.
+- In this checkout, Cline/DeepSeek is considered blocked until `cline --json config` verifies `deepseek` with `deepseek-v4-flash`; use Codex sub-agents as the parallel worker fallback.
 - Every worker must receive a bounded track phase, explicit file ownership, and a no-revert instruction.
 - Parallel workers must use disjoint write scopes or isolated worktrees.
 - External/manual worker output must be copied or summarized into Conductor evidence and reviewed by the Codex orchestrator before any task is marked complete.

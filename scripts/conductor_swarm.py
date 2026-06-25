@@ -19,7 +19,6 @@ import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-
 REPO = Path(__file__).resolve().parents[1]
 TRACK_ID = "provider_ontology_foundation_20260614"
 TRACK_PLAN_CANDIDATES = (
@@ -119,20 +118,45 @@ def cline_provider_check() -> Check:
     if not path:
         return Check("cline_provider", "blocked", "cline CLI unavailable")
 
-    result = run([path, "config", "--json"])
+    result = run([path, "--json", "config"])
     output = clean_output(result.stdout + "\n" + result.stderr)
     if result.returncode != 0:
-        return Check("cline_provider", "blocked", output or "cline config --json failed")
+        return Check("cline_provider", "blocked", output or "cline --json config failed")
     try:
         data = json.loads(result.stdout)
     except json.JSONDecodeError:
-        return Check("cline_provider", "blocked", "cline config --json did not emit JSON in this environment")
+        return Check("cline_provider", "blocked", "cline --json config did not emit JSON in this environment")
 
     redacted = redact(data)
     text = json.dumps(redacted, sort_keys=True).lower()
     if CLINE_PROVIDER in text and CLINE_MODEL.lower() in text:
         return Check("cline_provider", "ok", f"{CLINE_PROVIDER}/{CLINE_MODEL} present in redacted config")
     return Check("cline_provider", "blocked", f"{CLINE_PROVIDER}/{CLINE_MODEL} not present in redacted config")
+
+
+def cline_hub_check() -> Check:
+    path = command_path(CLINE_BIN)
+    if not path:
+        return Check("cline_hub", "blocked", "cline CLI unavailable")
+
+    result = run([path, "doctor", "--json"])
+    output = clean_output(result.stdout + "\n" + result.stderr)
+    if result.returncode != 0:
+        return Check("cline_hub", "warn", output or "cline doctor --json failed")
+    try:
+        data = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return Check("cline_hub", "warn", "cline doctor --json did not emit JSON in this environment")
+
+    if data.get("hubHealthy") is True:
+        return Check("cline_hub", "ok", "hub healthy")
+    stale = data.get("staleHubPids") or []
+    listening = data.get("listeningPids") or []
+    return Check(
+        "cline_hub",
+        "warn",
+        f"hub unhealthy; listeningPids={listening}; staleHubPids={stale}; direct CLI checks still available",
+    )
 
 
 def track_plan_path() -> Path | None:
@@ -177,6 +201,7 @@ def doctor_checks() -> list[Check]:
         git_upstream_check(),
         codex_check(),
         cline_cli_check(),
+        cline_hub_check(),
         cline_provider_check(),
     ]
 
@@ -203,8 +228,10 @@ def assignment_plan() -> dict[str, object]:
             "Verify git worktree is clean before launching workers.",
             "Verify Codex CLI can run non-interactively.",
             "Verify Cline CLI exists.",
-            "Verify Cline provider/model config for deepseek-v4-flash; otherwise block the Cline lane.",
-            "Use Codex swarm-review assignments while cline config --json requires an interactive TTY.",
+            "Verify Cline hub health with cline doctor --json and report unhealthy hubs as warnings.",
+            "Verify Cline provider/model config for deepseek-v4-flash with cline --json config; "
+            "otherwise block the Cline lane.",
+            "Use Codex swarm-review assignments while Cline provider/model verification is unavailable.",
         ],
         "lanes": {
             "codex_orchestrator": {
@@ -221,11 +248,14 @@ def assignment_plan() -> dict[str, object]:
             "codex_swarm_fallback": {
                 "runner": "in-session multi-agent tool",
                 "model": CODEX_MODEL,
-                "role": "parallel review/exploration/verification when Cline is unavailable or non-TTY blocked",
+                "role": "parallel review/exploration/verification when Cline is unavailable or provider/model blocked",
             },
         },
         "active_fallback": "codex_swarm_fallback",
-        "cline_blocker": "cline config --json requires an interactive TTY in this Codex session",
+        "cline_blocker": (
+            "Cline lane requires deepseek/deepseek-v4-flash in cline --json config; "
+            "use Codex fallback until verified"
+        ),
     }
 
 
