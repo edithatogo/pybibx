@@ -1,0 +1,30 @@
+# Citation File Format: https://citation-file-format.github.io/
+cff-version: 1.2.0
+message: If you use this software, please cite it using this metadata and record the commit
+  or release used.
+title: pybibx
+authors:
+- family-names: Pereira
+  given-names: Valdecy
+repository-code: https://github.com/edithatogo/pybibx
+url: https://github.com/edithatogo/pybibx
+abstract: This repository is a fork of Valdecy/pybibx. The upstream project retains its authorship
+  and attribution. Cite the exact repository revision used.
+preferred-citation:
+  type: article
+  title: 'PyBibX: A Python Library for Bibliometric and Scientometric Analysis Powered with
+    Artificial Intelligence Tools'
+  authors:
+  - family-names: Pereira
+    given-names: V.
+  - family-names: Basilio
+    given-names: M. P.
+  - family-names: Santos
+    given-names: C. H. T.
+  journal: Data Technologies and Applications
+  volume: 59
+  issue: 2
+  start: 302
+  end: 337
+  year: 2025
+  doi: 10.1108/DTA-08-2023-0461
